@@ -1,6 +1,6 @@
 {
   "server": {
     "url": "http://gitlab.com",
-    "token": "XXXXXX"
+    "token": "SECRET"
   }
 }

@@ -4,7 +4,9 @@ const electron = require('electron');
 const app = electron.app;  // Module to control application life.
 const BrowserWindow = electron.BrowserWindow;  // Module to create native browser window.
 const ipcMain = electron.ipcMain;
+const nconf = require('nconf');
 
+nconf.file({file: "config.json"});
 
 var shouldQuit = app.makeSingleInstance(function() {
     if(mainWindow) {
@@ -60,5 +62,20 @@ app.on('ready', function() {
 });
 
 function updateStatus(window) {
-    mainWindow.webContents.send('ping', 'whoooooooh!');
+    try {
+        var gitlab = require('gitlab')({
+            url: nconf.get("server:url"),
+            token: nconf.get("server:token")
+        });
+
+        var projs = [];
+        gitlab.projects.all(function (projects) {
+            mainWindow.webContents.send('ping', projects);
+        });
+
+        mainWindow.webContents.send('ping', projs);
+    }
+    catch(exc) {
+        mainWindow.webContents.send('ping', exc.message);
+    }
 }

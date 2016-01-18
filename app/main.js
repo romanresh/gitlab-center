@@ -20,7 +20,6 @@ var shouldQuit = app.makeSingleInstance(function() {
 
 if (shouldQuit) {
     app.quit();
-    return;
 }
 
 // Keep a global reference of the window object, if you don't, the window will

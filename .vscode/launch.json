@@ -1,0 +1,19 @@
+{
+    "version": "0.1.0",
+    "configurations": [
+        {
+            "name": "Launch main.js",
+            "type": "node",
+            "request": "launch",
+            "program": "app/main.js",
+            "stopOnEntry": false,
+            "args": [],
+            "cwd": ".",
+            "runtimeExecutable": "node_modules\\electron-prebuilt\\dist\\electron.exe",
+            "runtimeArgs": [],
+            "env": {},
+            "sourceMaps": false,
+            "outDir": null
+        }
+    ]
+}

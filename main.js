@@ -5,6 +5,7 @@ const app = electron.app;  // Module to control application life.
 const BrowserWindow = electron.BrowserWindow;  // Module to create native browser window.
 const ipcMain = electron.ipcMain;
 const nconf = require('nconf');
+const gitlab = require('node-gitlab');
 
 nconf.file({file: "config.json"});
 
@@ -62,20 +63,32 @@ app.on('ready', function() {
 });
 
 function updateStatus(window) {
-    try {
-        var gitlab = require('gitlab')({
-            url: nconf.get("server:url"),
-            token: nconf.get("server:token")
+        var client = gitlab.createPromise({
+            api: nconf.get("server:url") + "/api/v3",
+            privateToken: nconf.get("server:token")
         });
-
-        var projs = [];
-        gitlab.projects.all(function (projects) {
-            mainWindow.webContents.send('ping', projects);
-        });
-
-        mainWindow.webContents.send('ping', projs);
-    }
-    catch(exc) {
-        mainWindow.webContents.send('ping', exc.message);
-    }
+        client.projects.list()
+            .then(function(projects) {
+                mainWindow.webContents.send('ping', projects);
+            })
+            .catch(function(err) {
+                switch (err.name) {
+                    case "Gitlab401Error":
+                        // wrong token
+                        break;
+                    case "GitlabRequestError":
+                        switch (err.code) {
+                            case "ENOTFOUND":
+                                // server not found
+                                break;
+                            case "":
+                                break;
+                        }
+                        break;
+                    case "GitlabJSONResponseFormatError":
+                        // redirected
+                        break;
+                }
+                mainWindow.webContents.send('ping', err);
+            });
 }

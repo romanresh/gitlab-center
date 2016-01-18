@@ -5,7 +5,7 @@
             "name": "Launch main.js",
             "type": "node",
             "request": "launch",
-            "program": "app/main.js",
+            "program": "main.js",
             "stopOnEntry": false,
             "args": [],
             "cwd": ".",

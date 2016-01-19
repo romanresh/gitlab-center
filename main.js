@@ -54,40 +54,48 @@ app.on('ready', function() {
         // when you should delete the corresponding element.
         mainWindow = null;
     });
-
-    mainWindow.webContents.on('did-finish-load', function() {
-        updateStatus(mainWindow);
-
-    });
 });
 
-function updateStatus(window) {
-        var client = gitlab.createPromise({
-            api: nconf.get("server:url") + "/api/v3",
-            privateToken: nconf.get("server:token")
-        });
-        client.projects.list()
-            .then(function(projects) {
-                mainWindow.webContents.send('ping', projects);
-            })
-            .catch(function(err) {
-                switch (err.name) {
-                    case "Gitlab401Error":
-                        // wrong token
-                        break;
-                    case "GitlabRequestError":
-                        switch (err.code) {
-                            case "ENOTFOUND":
-                                // server not found
-                                break;
-                            case "":
-                                break;
-                        }
-                        break;
-                    case "GitlabJSONResponseFormatError":
-                        // redirected
-                        break;
-                }
-                mainWindow.webContents.send('ping', err);
-            });
+
+function createClient() {
+    return gitlab.createPromise({
+        api: nconf.get("server:url") + "/api/v3",
+        privateToken: nconf.get("server:token")
+    });
 }
+
+ipcMain.on("need-project-list", function() {
+   var client = createClient();
+    client.projects.list()
+        .then(function(projects) {
+            var result = [];
+            for(let i = 0; i < projects.length; i++) {
+                result.push({ 
+                    name: projects[i].name, 
+                    id: projects[i].id
+                });
+            }
+            mainWindow.webContents.send('need-project-list-reply', projects);
+        })
+        .catch(function(err) {
+            mainWindow.webContents.send('need-project-list-reply', [{name: "qqq", id: 123}]);
+            switch (err.name) {
+                case "Gitlab401Error":
+                    // wrong token
+                    break;
+                case "GitlabRequestError":
+                    switch (err.code) {
+                        case "ENOTFOUND":
+                            // server not found
+                            break;
+                        case "":
+                            break;
+                    }
+                    break;
+                case "GitlabJSONResponseFormatError":
+                    // redirected
+                    break;
+            }
+            mainWindow.webContents.send('ping', err);
+        });
+});

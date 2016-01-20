@@ -7,13 +7,36 @@ import NavigationBar from './components/NavigationBar';
 import HeaderButton from './components/HeaderButton';
 import SearchBar from './components/SearchBar';
 
+import LoadingPanel from './components/LoadingPanel';
+
+var ipc = electronRequire('ipc');
+
 var GitLabCenterApp = React.createClass({
     getInitialState: function() {
         return { 
             activePage: "Settings",
             isNavigationVisible: false,
-            searchString: ""
+            searchString: "",
+            settings: {
+                gitlabUrl: "",
+                gitlabToken: ""
+            },
+            isLoading: true
         };
+    },
+    componentDidMount: function() {
+        ipc.on('init-request-reply', function(settings) {
+            this.replaceState(
+                {
+                    settings: {
+                        gitlabUrl: settings.gitlabUrl,
+                        gitlabToken: settings.gitlabToken
+                    },
+                    isLoading: false
+                }
+            );
+        });
+        ipc.send('init-request');
     },
     render: function() {
         var ActivePage = null;
@@ -34,7 +57,7 @@ var GitLabCenterApp = React.createClass({
         
         return (
             <div>
-                <span>qwe</span>
+                { this.state.isLoading ? <LoadingPanel /> : null }
                 <NavigationBar activePage={this.state.activePage} visible={this.state.isNavigationVisible}/>
                 <div className="header">
                     <div className="left-area">

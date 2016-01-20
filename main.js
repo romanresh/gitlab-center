@@ -5,7 +5,7 @@ const app = electron.app;  // Module to control application life.
 const BrowserWindow = electron.BrowserWindow;  // Module to create native browser window.
 const ipcMain = electron.ipcMain;
 const nconf = require('nconf');
-const gitlab = require('node-gitlab');
+const Gitlab = require('gitlab');
 
 nconf.file({file: "config.json"});
 
@@ -56,11 +56,48 @@ app.on('ready', function() {
     });
 });
 
+ipcMain.on("init-request", function() {
+    var gitlabUrl = nconf.get("server:url");
+    var gitlabToken = nconf.get("server:token");
+    var projects = nconf.get("projects");
+    var state = {
+        gitlabUrl: gitlabUrl,
+        gitlabToken: gitlabUrl,
+        projects: projects,
+        error: "",
+        state: {}
+    }
+    
+    if(!gitlabUrl || !gitlabToken)
+        mainWindow.webContents.send('init-request-reply', state);
+    else {
+        var gitlab = createClient();
+        var projects = gitlab.projects.all(function(err, resp, result){
+            if(err) {
+                state.error = err;
+                mainWindow.webContents.send('init-request-reply', state);
+            }
+            else {
+                var requiredProjects = [];
+                for(let i = 0, project; project = result[i]; i++) {
+                    var projectID = project["id"];
+                    if(projects.indexOf(project["id"]))
+                        requiredProjects.push(projectID);
+                }
+                fillAndSendState('init-request-reply', gitlab, state);
+            }
+        });
+    }
+});
+
+function fillAndSendState(eventName, gitLab, state) {
+    // TODO: start with
+}
 
 function createClient() {
-    return gitlab.createPromise({
-        api: nconf.get("server:url") + "/api/v3",
-        privateToken: nconf.get("server:token")
+    return new Gitlab({
+        url: nconf.get("server:url"),
+        gitlabToken: nconf.get("server:token")
     });
 }
 

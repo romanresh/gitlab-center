@@ -2,5 +2,6 @@
   "server": {
     "url": "http://gitlab.com",
     "token": "SECRET"
-  }
+  },
+  "projects": [] // [0, 1, 2]
 }

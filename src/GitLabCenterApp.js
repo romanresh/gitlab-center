@@ -42,6 +42,11 @@ var GitLabCenterApp = React.createClass({
         });
         ipc.send('init-request');
     },
+    switchActivePage: function(key) {
+        this.setState({
+            activePage: key
+        });
+    },
     switchToSettings: function() {
         this.setState({
             activePage: "Settings"
@@ -78,7 +83,7 @@ var GitLabCenterApp = React.createClass({
                         </div>
                     </div>
                 </nav>
-                <NavigationBar activePage={this.state.activePage} visible={this.state.isNavigationVisible} items={[MergeRequestsPage.menuItem, SettingsPage.menuItem]}/>
+                <NavigationBar activePage={this.state.activePage} visible={this.state.isNavigationVisible} items={[MergeRequestsPage.menuItem, SettingsPage.menuItem]} onNavigate={this.switchActivePage} />
                 <div className="main">
                     {this.state.error ? <ErrorPanel text={this.state.error} isSettingsButtonVisible={this.state.activePage !== "Settings"} onSettingsClick={this.switchToSettings} /> : null }
                     <div className="main-content">

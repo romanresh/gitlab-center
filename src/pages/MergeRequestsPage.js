@@ -8,11 +8,16 @@ var MergeRequestsPage = React.createClass({
        );
    } 
 });
+MergeRequestsPage.menuItem = {
+    key: "MergeRequest",
+    text: "Merge Requests",
+    faIcon: "tasks"
+};
 
 var MergeRequestsPageTitle = React.createClass({
    render: function() {
        return (
-           <h1>Merge Requests</h1>
+           <span>{MergeRequestsPage.menuItem.text}</span>
        );
    } 
 });

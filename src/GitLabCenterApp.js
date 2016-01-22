@@ -4,8 +4,9 @@ import { SettingsPage, SettingsPageTitle } from './pages/SettingsPage';
 import { MergeRequestsPage, MergeRequestsPageTitle } from './pages/MergeRequestsPage';
 
 import NavigationBar from './components/NavigationBar';
-import HeaderButton from './components/HeaderButton';
+import RefreshButton from './components/RefreshButton';
 import SearchBar from './components/SearchBar';
+import ErrorPanel from './components/ErrorPanel';
 
 import LoadingPanel from './components/LoadingPanel';
 
@@ -14,40 +15,48 @@ var ipc = electronRequire('ipc');
 var GitLabCenterApp = React.createClass({
     getInitialState: function() {
         return { 
-            activePage: "Settings",
+            activePage: MergeRequestsPage.menuItem.key,
+            error: "",
             isNavigationVisible: false,
             searchString: "",
             settings: {
                 gitlabUrl: "",
-                gitlabToken: ""
+                gitlabToken: "",
+                
             },
             isLoading: true
         };
     },
     componentDidMount: function() {
-        ipc.on('init-request-reply', function(settings) {
-            this.replaceState(
+        ipc.on('init-request-reply', (state) => {
+            this.setState(
                 {
                     settings: {
-                        gitlabUrl: settings.gitlabUrl,
-                        gitlabToken: settings.gitlabToken
+                        gitlabUrl: state.gitlabUrl,
+                        gitlabToken: state.gitlabToken
                     },
+                    error: state.error,
                     isLoading: false
                 }
             );
         });
         ipc.send('init-request');
     },
+    switchToSettings: function() {
+        this.setState({
+            activePage: "Settings"
+        });
+    },
     render: function() {
         var ActivePage = null;
         var PageTitle = null;
         
         switch(this.state.activePage) {
-            case "Settings":
+            case SettingsPage.menuItem.key:
                 ActivePage = SettingsPage;
                 PageTitle = SettingsPageTitle;
                 break;
-            case "MergeRequest":
+            case MergeRequestsPage.menuItem.key:
                 ActivePage = MergeRequestsPage;
                 PageTitle = MergeRequestsPageTitle;
                 break;
@@ -58,19 +67,23 @@ var GitLabCenterApp = React.createClass({
         return (
             <div>
                 { this.state.isLoading ? <LoadingPanel /> : null }
-                <NavigationBar activePage={this.state.activePage} visible={this.state.isNavigationVisible}/>
-                <div className="header">
-                    <div className="left-area">
-                        <HeaderButton active={this.state.isNavigationVisible} />
-                        <PageTitle />
+                <nav className="navbar navbar-default navbar-fixed-top">
+                    <div className="container-fluid">
+                        <div className="navbar-brand">
+                            <PageTitle />
+                        </div>
+                        <div className="navbar-right">
+                            <SearchBar searchString={this.state.searchString} />
+                            <RefreshButton />
+                        </div>
                     </div>
-                    <div className="right-area">
-                        <SearchBar searchString={this.state.searchString} />
-                        <HeaderButton active={this.state.activePage === "Settings"} />
+                </nav>
+                <NavigationBar activePage={this.state.activePage} visible={this.state.isNavigationVisible} items={[MergeRequestsPage.menuItem, SettingsPage.menuItem]}/>
+                <div className="main">
+                    {this.state.error ? <ErrorPanel text={this.state.error} isSettingsButtonVisible={this.state.activePage !== "Settings"} onSettingsClick={this.switchToSettings} /> : null }
+                    <div className="main-content">
+                        <ActivePage searchString={this.state.searchString} />
                     </div>
-                </div>
-                <div className="main-content">
-                    <ActivePage searchString={this.state.searchString} />
                 </div>
             </div>
         );

@@ -25,8 +25,12 @@
   },
   "homepage": "https://github.com/romanresh/gitlab-center#readme",
   "dependencies": {
+    "async": "^1.5.2",
+    "bootstrap": "^3.3.6",
     "electron-prebuilt": "^0.36.4",
+    "font-awesome": "^4.5.0",
     "gitlab": "^1.5.0",
+    "jquery": "^2.2.0",
     "nconf": "^0.8.2",
     "node-gitlab": "^1.2.1",
     "react": "^0.14.6",
@@ -41,10 +45,12 @@
     "css-loader": "^0.23.1",
     "electron-packager": "^5.2.1",
     "electron-rebuild": "^1.1.1",
+    "file-loader": "^0.8.5",
     "less": "^2.5.3",
     "less-loader": "^2.2.2",
     "node-libs-browser": "^0.5.3",
     "style-loader": "^0.13.0",
+    "url-loader": "^0.5.7",
     "webpack": "^1.12.11",
     "webpack-dev-server": "^1.14.1"
   }

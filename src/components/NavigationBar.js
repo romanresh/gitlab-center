@@ -19,7 +19,7 @@ var NavigationBar = React.createClass({
 
         return (
             <div className="sidebar-wrapper">
-                <ul className="sidebar-nav nav-pills nav-stacked" id="menu">
+                <ul className="sidebar-nav nav-pills nav-stacked">
                     {items}
                 </ul>
             </div>

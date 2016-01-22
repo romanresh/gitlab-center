@@ -16,6 +16,7 @@ class GitLabWrapper {
         var config = this.config;
         var state = createState(config);
         if(!config.hasServerInfo()) {
+            state.error = "Gitlab URL and Token are mandatory.";
             callback(state);
             return;
         }
@@ -36,6 +37,10 @@ class GitLabWrapper {
                 });
             }
         });
+    }
+    
+    updateConfig(callback) {
+        this.init(callback);
     }
     
     getUserInfo(id, userInfo) {
@@ -114,7 +119,10 @@ class GitLabWrapper {
                         public: project["public"],
                         web_url: project["web_url"],
                         name: project["name"],
-                        namespace: project["namespace"],
+                        namespace: {
+                            id: project["namespace"]["id"],
+                            name: project["namespace"]["name"],
+                        },
                         star_count: project["star_count"],
                         mergeRequests: [],
                         isWatching: watchProjects.indexOf(projectId) > -1
@@ -142,7 +150,9 @@ function updateState(state, projects, currentUserId) {
     }
     state.tags.mergeRequests.mine = myMergeRequests;
     state.tags.mergeRequests.assignedToMe = assignedToMeMergeRequests;
-    
+    state.projects = [];
+    for(let projectId in projects)
+        state.projects.push(projects[projectId]);
 }
 
 function createClient(config) {
@@ -158,8 +168,7 @@ function createState(config) {
     return {
         gitlabUrl: serverInfo.url,
         gitlabToken: serverInfo.token,
-        projects: {},
-        watchProjects: [],
+        projects: [],
         error: "",
         tags: {
             mergeRequests: {

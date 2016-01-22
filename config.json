@@ -1,7 +1,7 @@
 {
   "server": {
     "url": "http://gitlab.com",
-    "token": "SECRET"
+    "token": "SECRET12"
   },
   "projects": []
 }

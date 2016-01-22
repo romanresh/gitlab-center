@@ -63,3 +63,9 @@ ipcMain.on("init-request", function() {
         mainWindow.webContents.send('init-request-reply', state);
     })
 });
+ipcMain.on("update-settings", function(evt, arg) {
+    config.update(arg);
+    wrapper.updateConfig((state) => {
+        mainWindow.webContents.send('update-settings-reply', state);
+    })
+});

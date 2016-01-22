@@ -21,26 +21,48 @@ var GitLabCenterApp = React.createClass({
             searchString: "",
             settings: {
                 gitlabUrl: "",
-                gitlabToken: "",
-                
+                gitlabToken: ""
             },
+            projects: [],
             isLoading: true
         };
     },
     componentDidMount: function() {
-        ipc.on('init-request-reply', (state) => {
+        ipc.on('init-request-reply', (result) => {
             this.setState(
                 {
                     settings: {
-                        gitlabUrl: state.gitlabUrl,
-                        gitlabToken: state.gitlabToken
+                        gitlabUrl: result.gitlabUrl,
+                        gitlabToken: result.gitlabToken
                     },
-                    error: state.error,
-                    isLoading: false
+                    error: result.error,
+                    isLoading: false,
+                    projects: result.projects
                 }
             );
         });
+        ipc.on('update-settings-reply', (result) => {
+            this.setState(
+                {
+                    error: result.error,
+                    isLoading: false,
+                    projects: result.projects
+                }
+            );
+        });
+        
         ipc.send('init-request');
+    },
+    onStateChanged: function(state) {
+        if(state.settings) {
+            state.isLoading = true;
+            ipc.send('update-settings', {
+                gitlabUrl: state.settings.gitlabUrl === undefined ? this.state.settings.gitlabUrl : state.settings.gitlabUrl,
+                gitlabToken: state.settings.gitlabToken === undefined ? this.state.settings.gitlabToken : state.settings.gitlabToken,
+                projects: state.settings.projects === undefined ? this.state.settings.projects : state.settings.projects
+            });
+        }
+        this.setState(state);
     },
     switchActivePage: function(key) {
         this.setState({
@@ -69,6 +91,8 @@ var GitLabCenterApp = React.createClass({
                 throw new Error("Unknown page type: " + this.state.activePage);
         }
         
+        var state = this.state;
+        
         return (
             <div>
                 { this.state.isLoading ? <LoadingPanel /> : null }
@@ -87,7 +111,7 @@ var GitLabCenterApp = React.createClass({
                 <div className="main">
                     {this.state.error ? <ErrorPanel text={this.state.error} isSettingsButtonVisible={this.state.activePage !== "Settings"} onSettingsClick={this.switchToSettings} /> : null }
                     <div className="main-content">
-                        <ActivePage searchString={this.state.searchString} />
+                        <ActivePage {...state} onStateChanged={this.onStateChanged} />
                     </div>
                 </div>
             </div>

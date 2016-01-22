@@ -75,6 +75,22 @@ var GitLabCenterApp = React.createClass({
         });
     },
     render: function() {
+        // var activePage = null,
+        //     pageTitle = null;
+        // switch(this.state.activePage) {
+        //     case SettingsPage.menuItem.key:
+        //         activePage = ();
+        //         PageTitle = SettingsPageTitle;
+        //         break;
+        //     case MergeRequestsPage.menuItem.key:
+        //         ActivePage = MergeRequestsPage;
+        //         PageTitle = MergeRequestsPageTitle;
+        //         break;
+        //     default:
+        //         throw new Error("Unknown page type: " + this.state.activePage);
+        // }    
+            
+        
         var ActivePage = null;
         var PageTitle = null;
         

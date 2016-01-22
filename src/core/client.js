@@ -88,10 +88,8 @@ class GitLabWrapper {
     loadCurrentUser(callback) {
         this.currentUserId = -1;
         let _this = this;
-        this.client.users.current(function(err, resp, result) {
-            if(err)
-                callback(err);
-            else if (result) {
+        this.client.users.current(function(result) {
+            if (result) {
                 _this.currentUserId = result["id"];
                 _this.getUserInfo(result["id"], result);
                 callback();
@@ -105,10 +103,9 @@ class GitLabWrapper {
         this.projects = {};
         var watchProjects = this.config.getWatchProjects();
         let _this = this;
-        this.client.projects.all((err, resp, result) => {
-            if(err) {
-                callback(err);
-                return;
+        this.client.projects.all((result) => {
+            if(typeof result === 'string' || result instanceof String) {
+                callback(result);
             }
             else {
                 for(let i = 0, project; project = result[i]; i++) {
@@ -130,6 +127,7 @@ class GitLabWrapper {
                 }
                 callback();
             }
+            //}
         });
     }
 }

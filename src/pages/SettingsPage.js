@@ -10,23 +10,13 @@ var SettingsPage = React.createClass({
             }
         });
     },
-    onChangeProjects: function() {
+    onChangeWatch: function(projectId, isWatching) {
         
+        this.props.onStateChanged({
+            projects: projects
+        });
     },
     render: function() {
-        var settingsProjectItems = null;
-        if(this.props.projects.length === 0) {
-            settingsProjectItems = (
-                <div>There is no projects</div> 
-            );
-        }
-        else {
-            settingsProjectItems = this.props.projects.map((proj) => {
-                return (
-                    <SettingsProjectItem key={proj.id} id={proj.id} name={proj.namespace.name + " / " + proj.name} />
-                );
-            });
-        }
        return (
            <div>
                 <div className="panel panel-default">
@@ -36,9 +26,9 @@ var SettingsPage = React.createClass({
                     </div>
                 </div>
                 <div className="panel panel-default">
-                    <div className="panel-heading">Server Settings</div>
+                    <div className="panel-heading">Watching Projects</div>
                     <div className="panel-body">
-                        <SettingsProjects projects={this.props.projects} />
+                        <SettingsProjects projects={this.props.projects} onChangeWatch={this.onChangeWatch} />
                     </div>
                 </div>
             </div>
@@ -69,31 +59,30 @@ var SettingsServer = React.createClass({
     render: function() {
         return(
             <form className="form-horizontal" role="form" onSubmit={this.onSubmit}>
-                    <div className="form-group">
-                        <label className="control-label col-sm-2" htmlFor="gitlaburl">GitLab URL:</label>
-                        <div className="col-sm-10">
-                            <input type="url" className="form-control" id="gitlaburl" ref="gitlabUrlInput" placeholder="http://" defaultValue={this.props.gitlabUrl} />
-                        </div>
+                <div className="form-group">
+                    <label className="control-label col-sm-2" htmlFor="gitlaburl">GitLab URL:</label>
+                    <div className="col-sm-10">
+                        <input type="url" className="form-control" id="gitlaburl" ref="gitlabUrlInput" placeholder="http://" defaultValue={this.props.gitlabUrl} />
                     </div>
-                    <div className="form-group">
-                        <label className="control-label col-sm-2" htmlFor="gittoken">Profile token:</label>
-                        <div className="col-sm-10"> 
-                            <input type="text" className="form-control" id="gittoken" ref="gitlabTokenInput" placeholder="Copy from Profile Settings -> Account" defaultValue={this.props.gitlabToken} />
-                        </div>
+                </div>
+                <div className="form-group">
+                    <label className="control-label col-sm-2" htmlFor="gittoken">Profile token:</label>
+                    <div className="col-sm-10"> 
+                        <input type="text" className="form-control" id="gittoken" ref="gitlabTokenInput" placeholder="Copy from Profile Settings -> Account" defaultValue={this.props.gitlabToken} />
                     </div>
-                    <div className="form-group"> 
-                        <div className="col-sm-offset-2 col-sm-10">
-                            <button type="submit" className="btn btn-default">Save Settings</button>
-                        </div>
+                </div>
+                <div className="form-group"> 
+                    <div className="col-sm-offset-2 col-sm-10">
+                        <button type="submit" className="btn btn-default">Save Settings</button>
                     </div>
-                </form>
+                </div>
+            </form>
         );
     } 
 });
 var SettingsProjects = React.createClass({
-    onSubmit: function(e) {
-        e.preventDefault();
-        
+    onWatchChange: function(id, evt) {
+        this.props.onChangeWatch(id, evt.target.checked);
     },
     render: function() {
         if(this.props.projects.length === 0)
@@ -105,19 +94,20 @@ var SettingsProjects = React.createClass({
                     There is no projects. Check your server settings.
                 </span>
             );
+        var projectItems = this.props.projects.map((proj) => {
+            return (
+                <div className="checkbox" key={proj.id}>
+                    <label>
+                    <input type="checkbox" defaultValue={proj.isWatching} onChange={this.onWatchChange.bind(this, proj.id)} />
+                    {proj.namespace.name + " / " + proj.name}</label>
+                </div>
+            );
+        });
         return (
-            <div>Projects</div>
+            <form className="form-horizontal" role="form" onSubmit={this.onSubmit}>
+                {projectItems}
+            </form>
         );
-    }
-});
-
-
-var SettingsProjectItem = React.createClass({
-    render: function() {
-        <div className="form-group">
-            <input type="checkbox" id={"proj" + this.props.id} ref="cb" />
-            <label className="control-label col-sm-2" htmlFor={"proj" + this.props.id}>{this.props.projectName}</label>
-        </div>
     }
 });
 

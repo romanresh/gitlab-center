@@ -17,6 +17,9 @@ var SettingsPage = React.createClass({
             projects: projects
         });
     },
+    onBadgeClick: function(arg) {
+        console.log(arg);
+    },
     render: function() {
        return (
            <div>

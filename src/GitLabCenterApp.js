@@ -25,7 +25,8 @@ var GitLabCenterApp = React.createClass({
             },
             projects: [],
             users: {},
-            isLoading: true
+            isLoading: true,
+            userId: -1
         };
     },
     componentDidMount: function() {
@@ -39,7 +40,8 @@ var GitLabCenterApp = React.createClass({
                     error: result.error,
                     isLoading: false,
                     projects: result.projects,
-                    users: result.users
+                    users: result.users,
+                    userId: result.userId
                 }
             );
         });
@@ -49,7 +51,8 @@ var GitLabCenterApp = React.createClass({
                     error: result.error,
                     isLoading: false,
                     projects: result.projects,
-                    users: result.users
+                    users: result.users,
+                    userId: result.userId
                 }
             );
         });
@@ -59,7 +62,8 @@ var GitLabCenterApp = React.createClass({
                     error: result.error,
                     isLoading: false,
                     projects: result.projects,
-                    users: result.users
+                    users: result.users,
+                    userId: result.userId
                 }
             );
         });
@@ -91,23 +95,10 @@ var GitLabCenterApp = React.createClass({
             activePage: "Settings"
         });
     },
+    onTitleBadgeClick: function(arg) {
+        this.refs["page"].onBadgeClick(arg);
+    },
     render: function() {
-        // var activePage = null,
-        //     pageTitle = null;
-        // switch(this.state.activePage) {
-        //     case SettingsPage.menuItem.key:
-        //         activePage = ();
-        //         PageTitle = SettingsPageTitle;
-        //         break;
-        //     case MergeRequestsPage.menuItem.key:
-        //         ActivePage = MergeRequestsPage;
-        //         PageTitle = MergeRequestsPageTitle;
-        //         break;
-        //     default:
-        //         throw new Error("Unknown page type: " + this.state.activePage);
-        // }    
-            
-        
         var ActivePage = null;
         var PageTitle = null;
         
@@ -132,7 +123,7 @@ var GitLabCenterApp = React.createClass({
                 <nav className="navbar navbar-default navbar-fixed-top">
                     <div className="container-fluid">
                         <div className="navbar-brand">
-                            <PageTitle />
+                            <PageTitle {...state} onBadgeClick={this.onTitleBadgeClick} />
                         </div>
                         <div className="navbar-right">
                             <SearchBar searchString={this.state.searchString} />
@@ -144,7 +135,7 @@ var GitLabCenterApp = React.createClass({
                 <div className="main">
                     {this.state.error ? <ErrorPanel text={this.state.error} isSettingsButtonVisible={this.state.activePage !== "Settings"} onSettingsClick={this.switchToSettings} /> : null }
                     <div className="main-content">
-                        <ActivePage {...state} onStateChanged={this.onStateChanged} />
+                        <ActivePage {...state} onStateChanged={this.onStateChanged} ref="page" />
                     </div>
                 </div>
             </div>

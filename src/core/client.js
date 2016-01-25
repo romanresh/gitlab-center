@@ -62,8 +62,7 @@ class GitLabWrapper {
                 id: id,
                 username: userInfo["username"],
                 email: userInfo["email"],
-                name: userInfo["name"],
-                isCurrent: this.currentUserId == id
+                name: userInfo["name"]
             };
         }
         return id;
@@ -151,23 +150,9 @@ class GitLabWrapper {
 }
 
 function updateState(state, projects, users, currentUserId) {
-    var myMergeRequests = 0;
-    var assignedToMeMergeRequests = 0;
-    for(let projectId in projects) {
-        let project = projects[projectId];
-        if(!project.isWatching)
-            continue;
-        for(let i = 0, mergeRequest; mergeRequest = project.mergeRequests[i]; i++) {
-            if(mergeRequest.author.id == currentUserId)
-                myMergeRequests++;
-            if(mergeRequest.assignee.id == currentUserId)
-                assignedToMeMergeRequests++;
-        }
-    }
-    state.tags.mergeRequests.mine = myMergeRequests;
-    state.tags.mergeRequests.assignedToMe = assignedToMeMergeRequests;
     state.projects = [];
     state.users = users;
+    state.userId = currentUserId;
     for(let projectId in projects)
         state.projects.push(projects[projectId]);
 }
@@ -188,12 +173,7 @@ function createState(config) {
         projects: [],
         users: {},
         error: "",
-        tags: {
-            mergeRequests: {
-                mine: 0,
-                assignedToMe: 0
-            }
-        }
+        userId: -1
     };
 }
 

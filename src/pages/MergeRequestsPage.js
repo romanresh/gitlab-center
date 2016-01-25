@@ -12,6 +12,24 @@ var MergeRequestsPage = React.createClass({
             targetProject: -1 // userId 
         };
     },
+    onBadgeClick: function(arg) {
+        if(arg == "merge-request-assigned") {
+            this.setState({
+                status: "opened",
+                assignee: this.props.userId,
+                author: -1,
+                targetProject: -1
+            });
+        }
+        else if(arg == "merge-request-opened") {
+            this.setState({
+                status: "opened",
+                assignee: -1,
+                author: this.props.userId,
+                targetProject: -1
+            });
+        }
+    },
     onFilterStatusChanged: function(status) {
         this.setState({
             status: status
@@ -160,9 +178,33 @@ MergeRequestsPage.menuItem = {
 };
 
 var MergeRequestsPageTitle = React.createClass({
+    onAssignedBadgeClick: function() {
+        this.props.onBadgeClick("merge-request-assigned");
+    },
+    onOpenedBadgeClick: function() {
+        this.props.onBadgeClick("merge-request-opened");
+    },
    render: function() {
+       var assignedToMe = 0;
+       var openedByMe = 0;
+       for(let i = 0, project; project = this.props.projects[i]; i++) {
+        for(let j = 0, mergeRequest; mergeRequest = project.mergeRequests[j]; j++) {
+            if(mergeRequest.assignee == this.props.userId)
+                assignedToMe++;
+            if(mergeRequest.author == this.props.userId)
+                openedByMe++;
+        }
+       }
+       
+       var assignedToMeBadge = null;
+       var openedByMeBadge = null;
+       
+       if(assignedToMe > 0)
+            assignedToMeBadge = <span className="badge merge-request-badge-assigned" title="Assigned To Me" onClick={this.onAssignedBadgeClick}>{assignedToMe}</span>;
+       if(openedByMe > 0)
+            openedByMeBadge = <span className="badge merge-request-badge-opened" title="Opened By Me" onClick={this.onOpenedBadgeClick}>{openedByMe}</span>;
        return (
-           <span>{MergeRequestsPage.menuItem.text}</span>
+           <span>{MergeRequestsPage.menuItem.text} {assignedToMeBadge} {openedByMeBadge}</span>
        );
    } 
 });

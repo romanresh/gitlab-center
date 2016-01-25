@@ -52,7 +52,8 @@ var MergeRequestsPage = React.createClass({
     },
     
     render: function() {
-       let mergeRequests = getMergeRequests(this.props.projects, this.state.status, this.state.assignee, this.state.author, this.state.targetProject);
+       let mergeRequests = getMergeRequests(this.props.projects, this.state.status,
+           this.state.assignee, this.state.author, this.state.targetProject, this.props.searchString);
        let mergeRequestList = mergeRequests.map((mr) => {
            return <MergeRequestItem {...mr} projects={this.props.projects} users={this.props.users} key={mr.id} />
        });
@@ -211,7 +212,7 @@ var MergeRequestsPageTitle = React.createClass({
 
 export { MergeRequestsPage, MergeRequestsPageTitle };
 
-function getMergeRequests(projects, status, assignee, author, targetProject) {
+function getMergeRequests(projects, status, assignee, author, targetProject, searchString) {
     let results = [];
     for(let i = 0, project; project = projects[i]; i++) {
         for(let j = 0, mergeRequest; mergeRequest = project.mergeRequests[j]; j++) {
@@ -227,6 +228,11 @@ function getMergeRequests(projects, status, assignee, author, targetProject) {
                 continue;
             if(targetProject >= 0 && mergeRequest.targetProjectId != targetProject)
                 continue;
+            if(searchString) {
+                if(mergeRequest.title.indexOf(searchString) < 0 &&
+                    mergeRequest.description.indexOf(searchString) < 0)
+                continue;
+            }
             results.push(mergeRequest);
         }
     }

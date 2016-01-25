@@ -98,6 +98,11 @@ var GitLabCenterApp = React.createClass({
     onTitleBadgeClick: function(arg) {
         this.refs["page"].onBadgeClick(arg);
     },
+    onSearchChange:function(arg) {
+        this.setState({
+            searchString: arg.target.value
+        });
+    },
     render: function() {
         var ActivePage = null;
         var PageTitle = null;
@@ -129,7 +134,7 @@ var GitLabCenterApp = React.createClass({
                         </div>
 
                         <div className="navbar-collapse pull-right">
-                            <SearchBar searchString={this.state.searchString} />
+                            <SearchBar searchString={this.state.searchString} onSearchChange={this.onSearchChange} />
                             <RefreshButton />
                         </div>
                     </div>

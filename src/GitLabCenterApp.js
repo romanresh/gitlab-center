@@ -96,6 +96,9 @@ var GitLabCenterApp = React.createClass({
         });
     },
     onTitleBadgeClick: function(arg) {
+        this.setState({
+            searchString: ""
+        });
         this.refs["page"].onBadgeClick(arg);
     },
     onSearchChange:function(arg) {

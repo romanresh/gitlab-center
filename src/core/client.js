@@ -28,31 +28,45 @@ class GitLabWrapper {
                 state.error = err;
                 callback(state);
             }
-            else {
-                async.parallel([
-                    this.loadMergeRequests.bind(this)
-                ], () => {
-                    updateState(state, this.projects, this.currentUserId);
-                    callback(state);
-                });
-            }
+            else
+                this.sync(callback, state);
         });
     }
     
-    updateConfig(callback) {
+    onUpdateConfig(callback) {
         this.init(callback);
     }
     
-    getUserInfo(id, userInfo) {
+    sync(callback, state) {
+        state = state || createState(this.config);
+        async.parallel([
+            this.loadMergeRequests.bind(this)
+        ], () => {
+            updateState(state, this.projects, this.users, this.currentUserId);
+            callback(state);
+        });
+    }
+    
+    onUpdateProjects(callback) {
+        var watchProjects = this.config.getWatchProjects().filter(pid => !!this.projects[pid]);
+        for(let projectId in this.projects) {
+            let project = this.projects[projectId];
+            project.isWatching = watchProjects.indexOf(projectId) >= 0;
+        }
+        this.sync(callback);
+    }
+    
+    getUserId(id, userInfo) {
         if(!this.users[id]) {
             this.users[id] = {
+                id: id,
                 username: userInfo["username"],
                 email: userInfo["email"],
                 name: userInfo["name"],
                 isCurrent: this.currentUserId == id
             };
         }
-        return this.users[id];
+        return id;
     }
     
     /* async operations */
@@ -63,19 +77,23 @@ class GitLabWrapper {
         async.map(watchProjects, (projectId, cb) => {
             var project = this.projects[projectId];
             project.mergeRequests = [];
-            _this.client.projects.mergeRequests.list(projectId, function(mergeRequests) {
+            _this.client.projects.merge_requests.list(projectId, function(mergeRequests) {
                 for(let i = 0, mergeRequest; mergeRequest = mergeRequests[i]; i++) {
-                    let author = mergeRequests["author"];
-                    let assignee = mergeRequests["assignee"];
+                    let author = mergeRequest["author"];
+                    let assignee = mergeRequest["assignee"];
                     project.mergeRequests.push({
                         id: mergeRequest["id"],
+                        createdAt: mergeRequest["created_at"],
+                        updatedAt: mergeRequest["updated_at"],
+                        description: mergeRequest["description"],
                         targetBranch: mergeRequest["target_branch"],
                         sourceBranch: mergeRequest["source_branch"],
-                        projectId: mergeRequest["project_id"],
+                        targetProjectId: mergeRequest["target_project_id"],
+                        sourceProjectId: mergeRequest["source_project_id"],
                         title: mergeRequest["title"],
                         state: mergeRequest["state"],
-                        author: _this.getUserInfo(author["id"], author),
-                        assignee: _this.getUserInfo(assignee["id"], assignee)
+                        author: _this.getUserId(author["id"], author),
+                        assignee: assignee ? _this.getUserId(assignee["id"], assignee) : -1
                     });
                 }
                 cb();
@@ -91,7 +109,7 @@ class GitLabWrapper {
         this.client.users.current(function(result) {
             if (result) {
                 _this.currentUserId = result["id"];
-                _this.getUserInfo(result["id"], result);
+                _this.getUserId(result["id"], result);
                 callback();
             }
             else
@@ -132,7 +150,7 @@ class GitLabWrapper {
     }
 }
 
-function updateState(state, projects, currentUserId) {
+function updateState(state, projects, users, currentUserId) {
     var myMergeRequests = 0;
     var assignedToMeMergeRequests = 0;
     for(let projectId in projects) {
@@ -149,6 +167,7 @@ function updateState(state, projects, currentUserId) {
     state.tags.mergeRequests.mine = myMergeRequests;
     state.tags.mergeRequests.assignedToMe = assignedToMeMergeRequests;
     state.projects = [];
+    state.users = users;
     for(let projectId in projects)
         state.projects.push(projects[projectId]);
 }
@@ -167,6 +186,7 @@ function createState(config) {
         gitlabUrl: serverInfo.url,
         gitlabToken: serverInfo.token,
         projects: [],
+        users: {},
         error: "",
         tags: {
             mergeRequests: {

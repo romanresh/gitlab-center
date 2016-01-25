@@ -24,6 +24,7 @@ var GitLabCenterApp = React.createClass({
                 gitlabToken: ""
             },
             projects: [],
+            users: {},
             isLoading: true
         };
     },
@@ -37,7 +38,8 @@ var GitLabCenterApp = React.createClass({
                     },
                     error: result.error,
                     isLoading: false,
-                    projects: result.projects
+                    projects: result.projects,
+                    users: result.users
                 }
             );
         });
@@ -46,21 +48,36 @@ var GitLabCenterApp = React.createClass({
                 {
                     error: result.error,
                     isLoading: false,
-                    projects: result.projects
+                    projects: result.projects,
+                    users: result.users
                 }
             );
         });
-        
+        ipc.on('update-projects-reply', (result) => {
+            this.setState(
+                {
+                    error: result.error,
+                    isLoading: false,
+                    projects: result.projects,
+                    users: result.users
+                }
+            );
+        });
         ipc.send('init-request');
     },
     onStateChanged: function(state) {
         if(state.settings) {
             state.isLoading = true;
+            state.projects = [];
             ipc.send('update-settings', {
                 gitlabUrl: state.settings.gitlabUrl === undefined ? this.state.settings.gitlabUrl : state.settings.gitlabUrl,
-                gitlabToken: state.settings.gitlabToken === undefined ? this.state.settings.gitlabToken : state.settings.gitlabToken,
-                projects: state.settings.projects === undefined ? this.state.settings.projects : state.settings.projects
+                gitlabToken: state.settings.gitlabToken === undefined ? this.state.settings.gitlabToken : state.settings.gitlabToken
             });
+        }
+        if(state.projects) {
+            ipc.send('update-projects', state.projects);
+            state.projects = [];
+            state.isLoading = true;
         }
         this.setState(state);
     },

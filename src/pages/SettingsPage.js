@@ -11,7 +11,8 @@ var SettingsPage = React.createClass({
         });
     },
     onChangeWatch: function(projectId, isWatching) {
-        
+        var projects = this.props.projects;
+        projects.find(p => p.id === projectId).isWatching = isWatching;
         this.props.onStateChanged({
             projects: projects
         });
@@ -98,7 +99,7 @@ var SettingsProjects = React.createClass({
             return (
                 <div className="checkbox" key={proj.id}>
                     <label>
-                    <input type="checkbox" defaultValue={proj.isWatching} onChange={this.onWatchChange.bind(this, proj.id)} />
+                    <input type="checkbox" checked={proj.isWatching} onChange={this.onWatchChange.bind(this, proj.id)} />
                     {proj.namespace.name + " / " + proj.name}</label>
                 </div>
             );

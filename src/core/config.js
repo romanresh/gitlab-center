@@ -5,7 +5,12 @@ const fs = require('fs');
 class AppConfig {
     constructor() {
         this.nconf = require('nconf');
-        this.nconf.file({file: "config.json"});
+        try {
+            this.nconf.file({file: "config.json"});
+        }
+        catch(exc) {
+            
+        }
     }
     
     getServerInfo() {
@@ -23,10 +28,22 @@ class AppConfig {
         return this.nconf.get("projects") || [];
     }
     
-    update(info) {
+    onUpdateCredentials(info) {
         this.nconf.set("server:url", info.gitlabUrl);
         this.nconf.set("server:token", info.gitlabToken);
-        this.nconf.set("server:projects", info.projects);
+        this.nconf.set("projects", []);
+        
+        this.nconf.save(function (err) {
+            fs.readFile('config.json');
+        });
+    }
+    onUpdateProjects(projects) {
+        let result = [];
+        for(let i = 0, project; project = projects[i]; i++) {
+            if(project.isWatching)
+                result.push(project.id);
+        }
+        this.nconf.set("projects", result);
         
         this.nconf.save(function (err) {
             fs.readFile('config.json');

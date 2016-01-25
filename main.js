@@ -64,8 +64,14 @@ ipcMain.on("init-request", function() {
     })
 });
 ipcMain.on("update-settings", function(evt, arg) {
-    config.update(arg);
-    wrapper.updateConfig((state) => {
+    config.onUpdateCredentials(arg);
+    wrapper.onUpdateConfig((state) => {
         mainWindow.webContents.send('update-settings-reply', state);
-    })
+    });
+});
+ipcMain.on('update-projects', function(evt, arg) {
+    config.onUpdateProjects(arg);
+    wrapper.onUpdateProjects((state) => {
+        mainWindow.webContents.send('update-projects-reply', state);
+    });
 });

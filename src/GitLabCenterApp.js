@@ -122,10 +122,13 @@ var GitLabCenterApp = React.createClass({
                 { this.state.isLoading ? <LoadingPanel /> : null }
                 <nav className="navbar navbar-default navbar-fixed-top">
                     <div className="container-fluid">
-                        <div className="navbar-brand">
-                            <PageTitle {...state} onBadgeClick={this.onTitleBadgeClick} />
+                        <div classNamw="navbar-header">
+                            <div className="navbar-brand">
+                                <PageTitle {...state} onBadgeClick={this.onTitleBadgeClick} />
+                            </div>
                         </div>
-                        <div className="navbar-right">
+
+                        <div className="navbar-collapse pull-right">
                             <SearchBar searchString={this.state.searchString} />
                             <RefreshButton />
                         </div>

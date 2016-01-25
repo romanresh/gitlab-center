@@ -75,3 +75,6 @@ ipcMain.on('update-projects', function(evt, arg) {
         mainWindow.webContents.send('update-projects-reply', state);
     });
 });
+ipcMain.on('sync', function() {
+    // update projects, check new/merged/closed requests
+});

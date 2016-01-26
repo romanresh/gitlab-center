@@ -59,7 +59,7 @@ var MergeRequestsPage = React.createClass({
        });
        
        return (
-           <div className="merge-requests container">
+           <div className="merge-requests">
            <div className="row">
             <div className="col-md-16 text-center">
                 <MergeRequestsStatusFilter status={this.state.status} onStatusChanged={this.onFilterStatusChanged} />

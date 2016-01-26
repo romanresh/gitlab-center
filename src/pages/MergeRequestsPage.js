@@ -55,7 +55,7 @@ var MergeRequestsPage = React.createClass({
        let mergeRequests = getMergeRequests(this.props.projects, this.state.status,
            this.state.assignee, this.state.author, this.state.targetProject, this.props.searchString);
        let mergeRequestList = mergeRequests.map((mr) => {
-           return <MergeRequestItem {...mr} projects={this.props.projects} users={this.props.users} key={mr.id} />
+           return <MergeRequestItem {...mr} projects={this.props.projects} users={this.props.users} key={mr.guid} />
        });
        
        return (

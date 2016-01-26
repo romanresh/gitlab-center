@@ -21,11 +21,13 @@ var GitLabCenterApp = React.createClass({
             searchString: "",
             settings: {
                 gitlabUrl: "",
-                gitlabToken: ""
+                gitlabToken: "",
+                updateTimeout: -1
             },
             projects: [],
             users: {},
             isLoading: true,
+            isSyncing: false,
             userId: -1
         };
     },
@@ -35,7 +37,8 @@ var GitLabCenterApp = React.createClass({
                 {
                     settings: {
                         gitlabUrl: result.gitlabUrl,
-                        gitlabToken: result.gitlabToken
+                        gitlabToken: result.gitlabToken,
+                        updateTimeout: result.updateTimeout
                     },
                     error: result.error,
                     isLoading: false,
@@ -67,6 +70,25 @@ var GitLabCenterApp = React.createClass({
                 }
             );
         });
+        ipc.on('sync-reply', result => {
+            this.setState(
+                {
+                    isSyncing: false,
+                    error: result.error,
+                    isLoading: false,
+                    projects: result.projects,
+                    users: result.users,
+                    userId: result.userId
+                }
+            );
+        });
+        ipc.on('before-sync', () => {
+            this.setState(
+                {
+                    isSyncing: true
+                }
+            );
+        });
         ipc.send('init-request');
     },
     onStateChanged: function(state) {
@@ -75,7 +97,8 @@ var GitLabCenterApp = React.createClass({
             state.projects = [];
             ipc.send('update-settings', {
                 gitlabUrl: state.settings.gitlabUrl === undefined ? this.state.settings.gitlabUrl : state.settings.gitlabUrl,
-                gitlabToken: state.settings.gitlabToken === undefined ? this.state.settings.gitlabToken : state.settings.gitlabToken
+                gitlabToken: state.settings.gitlabToken === undefined ? this.state.settings.gitlabToken : state.settings.gitlabToken,
+                updateTimeout: state.settings.updateTimeout === undefined ? this.state.settings.updateTimeout : state.settings.updateTimeout,
             });
         }
         if(state.projects) {
@@ -105,6 +128,14 @@ var GitLabCenterApp = React.createClass({
         this.setState({
             searchString: arg.target.value
         });
+    },
+    onRefreshClick: function() {
+        if(this.state.isSyncing)
+            return;
+        this.setState({
+            isSyncing: true
+        });
+        ipc.send('sync');
     },
     render: function() {
         var ActivePage = null;
@@ -138,7 +169,7 @@ var GitLabCenterApp = React.createClass({
 
                         <div className="navbar-collapse pull-right">
                             <SearchBar searchString={this.state.searchString} onSearchChange={this.onSearchChange} />
-                            <RefreshButton />
+                            <RefreshButton onRefreshClick={this.onRefreshClick} isSyncing={this.state.isSyncing} />
                         </div>
                     </div>
                 </nav>

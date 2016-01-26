@@ -11,6 +11,7 @@ class AppConfig {
         catch(exc) {
             
         }
+        this.nconf.defaults({"updateTimeout": 30});
     }
     
     getServerInfo() {
@@ -28,14 +29,15 @@ class AppConfig {
         return this.nconf.get("projects") || [];
     }
     
-    onUpdateCredentials(info) {
+    getUpdateTimeout() {
+        return this.nconf.get("updateTimeout") || 30;
+    }
+    onUpdateSettings(info) {
         this.nconf.set("server:url", info.gitlabUrl);
         this.nconf.set("server:token", info.gitlabToken);
+        this.nconf.set("updateTimeout", info.updateTimeout);
         this.nconf.set("projects", []);
-        
-        this.nconf.save(function (err) {
-            fs.readFile('config.json');
-        });
+        this.saveSettings();
     }
     onUpdateProjects(projects) {
         let result = [];
@@ -44,7 +46,9 @@ class AppConfig {
                 result.push(project.id);
         }
         this.nconf.set("projects", result);
-        
+        this.saveSettings();
+    }
+    saveSettings() {
         this.nconf.save(function (err) {
             fs.readFile('config.json');
         });

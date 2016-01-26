@@ -2,11 +2,12 @@
 import React from "react";
 
 var SettingsPage = React.createClass({
-    onChangeSettings: function(gitlabUrl, gitlabToken) {
+    onChangeSettings: function(gitlabUrl, gitlabToken, updateTimeout) {
         this.props.onStateChanged({
             settings: {
                 gitlabUrl: gitlabUrl,
-                gitlabToken: gitlabToken
+                gitlabToken: gitlabToken,
+                updateTimeout: updateTimeout
             }
         });
     },
@@ -26,7 +27,9 @@ var SettingsPage = React.createClass({
                 <div className="panel panel-default">
                     <div className="panel-heading">Server Settings</div>
                     <div className="panel-body">
-                        <SettingsServer gitlabUrl={this.props.settings.gitlabUrl} gitlabToken={this.props.settings.gitlabToken} onChange={this.onChangeSettings} />
+                        <SettingsServer gitlabUrl={this.props.settings.gitlabUrl} 
+                            gitlabToken={this.props.settings.gitlabToken} 
+                            updateTimeout={this.props.settings.updateTimeout} onChange={this.onChangeSettings} />
                     </div>
                 </div>
                 <div className="panel panel-default">
@@ -56,9 +59,9 @@ var SettingsPageTitle = React.createClass({
 var SettingsServer = React.createClass({
     onSubmit: function(e) {
         e.preventDefault();
-        if(this.refs.gitlabUrlInput.value == this.props.gitlabUrl && this.refs.gitlabTokenInput.value == this.props.gitlabToken)
+        if(this.refs.gitlabUrlInput.value == this.props.gitlabUrl && this.refs.gitlabTokenInput.value == this.props.gitlabToken && this.refs.syncTimeoutInput.value == this.props.updateTimeout)
             return;
-        this.props.onChange(this.refs.gitlabUrlInput.value, this.refs.gitlabTokenInput.value);
+        this.props.onChange(this.refs.gitlabUrlInput.value, this.refs.gitlabTokenInput.value, this.refs.syncTimeoutInput.value);
     },
     render: function() {
         return(
@@ -73,6 +76,12 @@ var SettingsServer = React.createClass({
                     <label className="control-label col-sm-2" htmlFor="gittoken">Profile token:</label>
                     <div className="col-sm-10"> 
                         <input type="text" className="form-control" id="gittoken" ref="gitlabTokenInput" placeholder="Copy from Profile Settings -> Account" defaultValue={this.props.gitlabToken} />
+                    </div>
+                </div>
+                <div className="form-group">
+                    <label className="control-label col-sm-2" htmlFor="syncTimeout">Sync Timeout(sec):</label>
+                    <div className="col-sm-10"> 
+                        <input type="number" className="form-control" id="syncTimeout" ref="syncTimeoutInput" placeholder="Timeout of server requests" defaultValue={this.props.updateTimeout} min="5" />
                     </div>
                 </div>
                 <div className="form-group"> 

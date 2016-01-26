@@ -40,7 +40,7 @@ class GitLabWrapper {
     sync(callback, state) {
         state = state || createState(this.config);
         async.parallel([
-            this.loadMergeRequests.bind(this)
+            this.loadMergeRequests.bind(this, true)
         ], () => {
             updateState(state, this.projects, this.users, this.currentUserId);
             callback(state);
@@ -54,6 +54,19 @@ class GitLabWrapper {
             project.isWatching = watchProjects.indexOf(projectId) >= 0;
         }
         this.sync(callback);
+    }
+    onSync(callback, reloadAll) {
+        let operations = [];
+        let state = createState(this.config);
+        if(reloadAll)
+            operations.push(this.loadProjectsList.bind(this));
+        operations.push(this.loadMergeRequests.bind(this, reloadAll));
+        async.parallel(operations, (err) => {
+            if(err)
+                state.error = err;
+            updateState(state, this.projects, this.users, this.currentUserId);
+            callback(state);
+        });
     }
     
     getUserId(id, userInfo) {
@@ -70,18 +83,24 @@ class GitLabWrapper {
     
     /* async operations */
     
-    loadMergeRequests(callback) {
+    loadMergeRequests(reloadAll, callback) {
         var watchProjects = this.config.getWatchProjects().filter(pid => !!this.projects[pid]);
         let _this = this;
         async.map(watchProjects, (projectId, cb) => {
             var project = this.projects[projectId];
-            project.mergeRequests = [];
+            if(reloadAll)
+                project.mergeRequests = [];
+            var lastMergeRequest = project.mergeRequests[0];
+            let newMergeRequests = [];
             _this.client.projects.merge_requests.list(projectId, function(mergeRequests) {
                 for(let i = 0, mergeRequest; mergeRequest = mergeRequests[i]; i++) {
                     let author = mergeRequest["author"];
                     let assignee = mergeRequest["assignee"];
-                    project.mergeRequests.push({
+                    if(!reloadAll && lastMergeRequest && (new Date(mergeRequest["created_at"]) < new Date(lastMergeRequest.createdAt) || lastMergeRequest.id == mergeRequest["id"]))
+                        break;
+                    newMergeRequests.push({
                         id: mergeRequest["id"],
+                        guid: project.id + "_" + mergeRequest["id"],
                         createdAt: mergeRequest["created_at"],
                         updatedAt: mergeRequest["updated_at"],
                         description: mergeRequest["description"],
@@ -92,9 +111,14 @@ class GitLabWrapper {
                         title: mergeRequest["title"],
                         state: mergeRequest["state"],
                         author: _this.getUserId(author["id"], author),
-                        assignee: assignee ? _this.getUserId(assignee["id"], assignee) : -1
+                        assignee: assignee ? _this.getUserId(assignee["id"], assignee) : -1,
+                        isNew: !reloadAll
                     });
                 }
+                if(!reloadAll)
+                    project.mergeRequests = newMergeRequests.concat(project.mergeRequests);
+                else
+                    project.mergeRequests = newMergeRequests;
                 cb();
             });
         }, (err, results) => {
@@ -167,9 +191,11 @@ function createClient(config) {
 
 function createState(config) {
     var serverInfo = config.getServerInfo();
+    var updateTimeout = config.getUpdateTimeout();
     return {
         gitlabUrl: serverInfo.url,
         gitlabToken: serverInfo.token,
+        updateTimeout: updateTimeout,
         projects: [],
         users: {},
         error: "",

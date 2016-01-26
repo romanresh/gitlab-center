@@ -7,6 +7,7 @@ const ipcMain = electron.ipcMain;
 
 const AppConfig = require('./src/core/config');
 const GitLabWrapper = require('./src/core/client');
+const Synchronizer = require('./src/core/synchronizer');
 
 var shouldQuit = app.makeSingleInstance(function() {
     if(mainWindow) {
@@ -26,6 +27,7 @@ if (shouldQuit) {
 var mainWindow = null;
 var config = new AppConfig();
 var wrapper = new GitLabWrapper(config);
+var synchronizer = new Synchronizer(config, wrapper);
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function() {
@@ -61,11 +63,13 @@ app.on('ready', function() {
 ipcMain.on("init-request", function() {
     wrapper.init((state) => {
         mainWindow.webContents.send('init-request-reply', state);
-    })
+        runSynchronizer();
+    });
 });
 ipcMain.on("update-settings", function(evt, arg) {
-    config.onUpdateCredentials(arg);
+    config.onUpdateSettings(arg);
     wrapper.onUpdateConfig((state) => {
+        runSynchronizer();
         mainWindow.webContents.send('update-settings-reply', state);
     });
 });
@@ -75,6 +79,22 @@ ipcMain.on('update-projects', function(evt, arg) {
         mainWindow.webContents.send('update-projects-reply', state);
     });
 });
-ipcMain.on('sync', function() {
-    // update projects, check new/merged/closed requests
+ipcMain.on('sync', function(evt, arg) {
+    synchronizer.stop();
+    wrapper.sync((state) => {
+        if(state.projects[5].mergeRequests.length > 2)
+            debugger;
+        mainWindow.webContents.send('sync-reply', state);
+        runSynchronizer();
+    });
 });
+
+function runSynchronizer() {
+    synchronizer.start(
+        () => mainWindow.webContents.send('before-sync'),
+        (state) => {
+            if(state.projects[5].mergeRequests.length > 2)
+                debugger;
+            mainWindow.webContents.send('sync-reply', state)
+        });
+}

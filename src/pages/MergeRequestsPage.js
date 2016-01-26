@@ -190,9 +190,9 @@ var MergeRequestsPageTitle = React.createClass({
        var openedByMe = 0;
        for(let i = 0, project; project = this.props.projects[i]; i++) {
         for(let j = 0, mergeRequest; mergeRequest = project.mergeRequests[j]; j++) {
-            if(mergeRequest.assignee == this.props.userId)
+            if(mergeRequest.assignee == this.props.userId && isOpened(mergeRequest))
                 assignedToMe++;
-            if(mergeRequest.author == this.props.userId)
+            if(mergeRequest.author == this.props.userId && isOpened(mergeRequest))
                 openedByMe++;
         }
        }
@@ -217,7 +217,7 @@ function getMergeRequests(projects, status, assignee, author, targetProject, sea
     for(let i = 0, project; project = projects[i]; i++) {
         for(let j = 0, mergeRequest; mergeRequest = project.mergeRequests[j]; j++) {
             if(status != "all") {
-                if(status == "opened" && (mergeRequest.state != "opened" && mergeRequest.state != "reopened"))
+                if(status == "opened" && !isOpened(mergeRequest))
                     continue;
                 else if(status != "opened" && mergeRequest.state != status)
                     continue;
@@ -237,4 +237,8 @@ function getMergeRequests(projects, status, assignee, author, targetProject, sea
         }
     }
     return results;
+}
+
+function isOpened(mergeRequest) {
+    return ["opened", "reopened"].indexOf(mergeRequest.state) > -1;
 }

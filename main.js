@@ -4,6 +4,7 @@ const electron = require('electron');
 const app = electron.app;  // Module to control application life.
 const BrowserWindow = electron.BrowserWindow;  // Module to create native browser window.
 const ipcMain = electron.ipcMain;
+const Tray = electron.Tray;
 
 const AppConfig = require('./src/core/config');
 const GitLabWrapper = require('./src/core/client');
@@ -25,6 +26,8 @@ if (shouldQuit) {
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 var mainWindow = null;
+var appIcon = null;
+
 var config = new AppConfig();
 var wrapper = new GitLabWrapper(config);
 var synchronizer = new Synchronizer(config, wrapper);
@@ -42,7 +45,11 @@ app.on('window-all-closed', function() {
 // initialization and is ready to create browser windows.
 app.on('ready', function() {
     // Create the browser window.
-    mainWindow = new BrowserWindow({width: 800, height: 600});
+    mainWindow = new BrowserWindow({
+        width: 800, 
+        height: 600, 
+        icon: './public/logo-square.png'
+    });
 
     // and load the index.html of the app.
     mainWindow.loadURL('file://' + __dirname + '/public/index.html');
@@ -56,6 +63,12 @@ app.on('ready', function() {
         // in an array if your app supports multi windows, this is the time
         // when you should delete the corresponding element.
         mainWindow = null;
+    });
+    
+    appIcon = new Tray('./public/logo-square.png');
+    appIcon.setToolTip('This is my application.');
+    appIcon.on('click', () => {
+        mainWindow.focus();
     });
 });
 // 
@@ -82,9 +95,7 @@ ipcMain.on('update-projects', function(evt, arg) {
 ipcMain.on('sync', function(evt, arg) {
     synchronizer.stop();
     wrapper.sync((state) => {
-        if(state.projects[5].mergeRequests.length > 2)
-            debugger;
-        mainWindow.webContents.send('sync-reply', state);
+        onSyncFinished(state);
         runSynchronizer();
     });
 });
@@ -93,8 +104,27 @@ function runSynchronizer() {
     synchronizer.start(
         () => mainWindow.webContents.send('before-sync'),
         (state) => {
-            if(state.projects[5].mergeRequests.length > 2)
-                debugger;
-            mainWindow.webContents.send('sync-reply', state)
+            onSyncFinished(state);
         });
+}
+function onSyncFinished(state) {
+    mainWindow.webContents.send('sync-reply', state);
+    var isActive = false;
+    
+    if(state.userId && state.projects.length) {
+        for(let i = 0, project; project = state.projects[i]; i++) {
+            if(project.mergeRequests.find(mr => isOpened(mr) && (mr.assignee == state.userId || ms.author == state.userId))) {
+                isActive = true;
+                break;
+            }
+        }
+    }
+    if(isActive)
+        appIcon.setImage('./public/logo-square-active.png');
+    else
+        appIcon.setImage('./public/logo-square.png');
+}
+
+function isOpened(mergeRequest) {
+    return ["opened", "reopened"].indexOf(mergeRequest.state) > -1;
 }

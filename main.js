@@ -50,6 +50,7 @@ app.on('ready', function() {
         height: 600, 
         icon: './public/logo-square.png'
     });
+    mainWindow.setMenu(null);
 
     // and load the index.html of the app.
     mainWindow.loadURL('file://' + __dirname + '/public/index.html');

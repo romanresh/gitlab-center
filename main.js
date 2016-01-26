@@ -66,7 +66,7 @@ app.on('ready', function() {
     });
     
     appIcon = new Tray('./public/logo-square.png');
-    appIcon.setToolTip('This is my application.');
+    appIcon.setToolTip('GitLab Center');
     appIcon.on('click', () => {
         mainWindow.focus();
     });
@@ -77,6 +77,7 @@ ipcMain.on("init-request", function() {
     wrapper.init((state) => {
         mainWindow.webContents.send('init-request-reply', state);
         runSynchronizer();
+        updateTray(state);
     });
 });
 ipcMain.on("update-settings", function(evt, arg) {
@@ -84,18 +85,21 @@ ipcMain.on("update-settings", function(evt, arg) {
     wrapper.onUpdateConfig((state) => {
         runSynchronizer();
         mainWindow.webContents.send('update-settings-reply', state);
+        updateTray(state);
     });
 });
 ipcMain.on('update-projects', function(evt, arg) {
     config.onUpdateProjects(arg);
     wrapper.onUpdateProjects((state) => {
         mainWindow.webContents.send('update-projects-reply', state);
+        updateTray(state);
     });
 });
 ipcMain.on('sync', function(evt, arg) {
     synchronizer.stop();
     wrapper.sync((state) => {
-        onSyncFinished(state);
+        mainWindow.webContents.send('sync-reply', state);
+        updateTray(state);
         runSynchronizer();
     });
 });
@@ -104,13 +108,15 @@ function runSynchronizer() {
     synchronizer.start(
         () => mainWindow.webContents.send('before-sync'),
         (state) => {
-            onSyncFinished(state);
+            mainWindow.webContents.send('sync-reply', state);
+            updateTray(state);
         });
 }
-function onSyncFinished(state) {
-    mainWindow.webContents.send('sync-reply', state);
+function isOpened(mergeRequest) {
+    return ["opened", "reopened"].indexOf(mergeRequest.state) > -1;
+}
+function updateTray(state) {
     var isActive = false;
-    
     if(state.userId && state.projects.length) {
         for(let i = 0, project; project = state.projects[i]; i++) {
             if(project.mergeRequests.find(mr => isOpened(mr) && (mr.assignee == state.userId || ms.author == state.userId))) {
@@ -123,8 +129,4 @@ function onSyncFinished(state) {
         appIcon.setImage('./public/logo-square-active.png');
     else
         appIcon.setImage('./public/logo-square.png');
-}
-
-function isOpened(mergeRequest) {
-    return ["opened", "reopened"].indexOf(mergeRequest.state) > -1;
 }

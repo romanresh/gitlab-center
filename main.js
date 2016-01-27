@@ -56,9 +56,11 @@ app.on('before-quit', () => {
 app.on('ready', function() {
     // Create the browser window.
     mainWindow = new BrowserWindow({
-        width: 800, 
+        width: 1024, 
         height: 600, 
-        icon: __dirname + '/public/logo-square.png'
+        icon: __dirname + '/public/logo-square.png',
+        'min-width': 1024,
+        'min-height': 600
     });
     mainWindow.setMenu(null);
 

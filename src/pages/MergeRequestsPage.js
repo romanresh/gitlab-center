@@ -177,6 +177,7 @@ MergeRequestsPage.menuItem = {
     text: "Merge Requests",
     faIcon: "tasks"
 };
+MergeRequestsPage.supportSearch = true;
 
 var MergeRequestsPageTitle = React.createClass({
     onAssignedBadgeClick: function() {

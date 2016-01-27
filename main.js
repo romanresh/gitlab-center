@@ -5,6 +5,8 @@ const app = electron.app;  // Module to control application life.
 const BrowserWindow = electron.BrowserWindow;  // Module to create native browser window.
 const ipcMain = electron.ipcMain;
 const Tray = electron.Tray;
+const Menu = electron.Menu;
+const MenuItem = electron.MenuItem;
 const CombinedStream = require('combined-stream');
 
 const AppConfig = require('./src/core/config');
@@ -42,6 +44,12 @@ app.on('window-all-closed', function() {
         app.quit();
     //}
 });
+app.on('before-quit', () => {
+    if(mainWindow) {
+        mainWindow.removeAllListeners('close');
+        mainWindow.close();
+    }
+});
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -58,8 +66,13 @@ app.on('ready', function() {
     mainWindow.loadURL('file://' + __dirname + '/public/index.html');
 
     // Open the DevTools.
-    // mainWindow.webContents.openDevTools();
-
+    mainWindow.webContents.openDevTools();
+    
+    mainWindow.on('close', function(event) {
+        mainWindow.hide();
+        event.preventDefault();
+    });
+    
     // Emitted when the window is closed.
     mainWindow.on('closed', function() {
         // Dereference the window object, usually you would store windows
@@ -73,6 +86,9 @@ app.on('ready', function() {
     appIcon.on('click', () => {
         mainWindow.focus();
     });
+    var contextMenu = new Menu();
+    contextMenu.append(new MenuItem({ label: 'Close GitLab Center', click: function() { app.quit(); } }));
+    appIcon.setContextMenu(contextMenu);
 });
 // 
 // 

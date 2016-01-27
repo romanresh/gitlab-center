@@ -19,7 +19,7 @@ var SettingsPage = React.createClass({
         });
     },
     onBadgeClick: function(arg) {
-        console.log(arg);
+        // Do Nothing
     },
     render: function() {
        return (
@@ -104,7 +104,7 @@ var SettingsProjects = React.createClass({
                     <span className="fa-stack fa-lg">
                     <i className="fa fa-warning fa-stack-1x"></i>
                     </span>
-                    There is no projects. Check your server settings.
+                    There are no projects. Check your server settings.
                 </span>
             );
         var projectItems = this.props.projects.map((proj) => {

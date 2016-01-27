@@ -83,11 +83,9 @@ var GitLabCenterApp = React.createClass({
             );
         });
         ipc.on('before-sync', () => {
-            this.setState(
-                {
-                    isSyncing: true
-                }
-            );
+            this.setState({
+                isSyncing: true
+            });
         });
         ipc.send('init-request');
     },
@@ -168,7 +166,7 @@ var GitLabCenterApp = React.createClass({
                         </div>
 
                         <div className="navbar-collapse pull-right">
-                            <SearchBar searchString={this.state.searchString} onSearchChange={this.onSearchChange} />
+                            <SearchBar searchString={this.state.searchString} onSearchChange={this.onSearchChange} isVisible={ActivePage.supportSearch} />
                             <RefreshButton onRefreshClick={this.onRefreshClick} isSyncing={this.state.isSyncing} />
                         </div>
                     </div>

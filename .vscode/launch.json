@@ -11,7 +11,9 @@
             "cwd": ".",
             "runtimeExecutable": "node_modules\\electron-prebuilt\\dist\\electron.exe",
             "runtimeArgs": [],
-            "env": {},
+            "env": {
+                "NODE_ENV": "development"
+            },
             "sourceMaps": false,
             "outDir": null
         }

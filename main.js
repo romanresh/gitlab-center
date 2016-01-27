@@ -5,6 +5,7 @@ const app = electron.app;  // Module to control application life.
 const BrowserWindow = electron.BrowserWindow;  // Module to create native browser window.
 const ipcMain = electron.ipcMain;
 const Tray = electron.Tray;
+const CombinedStream = require('combined-stream');
 
 const AppConfig = require('./src/core/config');
 const GitLabWrapper = require('./src/core/client');
@@ -37,6 +38,7 @@ app.on('window-all-closed', function() {
     // On OS X it is common for applications and their menu bar
     // to stay active until the user quits explicitly with Cmd + Q
     //if (process.platform != 'darwin') {
+        synchronizer.stop();
         app.quit();
     //}
 });
@@ -48,7 +50,7 @@ app.on('ready', function() {
     mainWindow = new BrowserWindow({
         width: 800, 
         height: 600, 
-        icon: './public/logo-square.png'
+        icon: __dirname + '/public/logo-square.png'
     });
     mainWindow.setMenu(null);
 
@@ -56,7 +58,7 @@ app.on('ready', function() {
     mainWindow.loadURL('file://' + __dirname + '/public/index.html');
 
     // Open the DevTools.
-    //mainWindow.webContents.openDevTools();
+    // mainWindow.webContents.openDevTools();
 
     // Emitted when the window is closed.
     mainWindow.on('closed', function() {
@@ -66,7 +68,7 @@ app.on('ready', function() {
         mainWindow = null;
     });
     
-    appIcon = new Tray('./public/logo-square.png');
+    appIcon = new Tray(__dirname + '/public/logo-square.png');
     appIcon.setToolTip('GitLab Center');
     appIcon.on('click', () => {
         mainWindow.focus();
@@ -117,6 +119,7 @@ function isOpened(mergeRequest) {
     return ["opened", "reopened"].indexOf(mergeRequest.state) > -1;
 }
 function updateTray(state) {
+    return;
     var isActive = false;
     if(state.userId && state.projects.length) {
         for(let i = 0, project; project = state.projects[i]; i++) {
@@ -127,7 +130,7 @@ function updateTray(state) {
         }
     }
     if(isActive)
-        appIcon.setImage('./public/logo-square-active.png');
+        appIcon.setImage(__dirname + '/public/logo-square-active.png');
     else
-        appIcon.setImage('./public/logo-square.png');
+        appIcon.setImage(__dirname + '/public/logo-square.png');
 }

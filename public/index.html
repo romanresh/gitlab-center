@@ -15,9 +15,14 @@
     <div id="content"></div>
     <script type="text/javascript">
         var electronRequire = require;
+        var scr = document.createElement('script');
+        if(typeof process !== 'undefined' && process.env.NODE_ENV === 'development')
+            scr.src = 'http://localhost:8080/built/bundle.js';
+        else
+            scr.src = './built/bundle.js';
+        document.body.appendChild(scr);
     </script>
-    <script src="http://localhost:8080/webpack-dev-server.js"></script>
-    <script src="http://localhost:8080/built/bundle.js"></script>
+    
 </body>
 
 </html>

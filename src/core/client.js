@@ -163,7 +163,8 @@ class GitLabWrapper {
                         },
                         star_count: project["star_count"],
                         mergeRequests: [],
-                        isWatching: watchProjects.indexOf(projectId) > -1
+                        isWatching: watchProjects.indexOf(projectId) > -1,
+                        isAccessible: true
                     };
                 }
                 callback();

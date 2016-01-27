@@ -90,6 +90,7 @@ var MergeRequestItem = React.createClass({
     render: function() {
         let targetProject = this.props.projects.find(p => p.id == this.props.targetProjectId);
         let sourceProject = this.props.projects.find(p => p.id == this.props.sourceProjectId);
+        let author = this.props.users[this.props.author];
         
         return (
             <div className="panel panel-default">
@@ -101,10 +102,10 @@ var MergeRequestItem = React.createClass({
                         {this.props.description}
                         {this.props.description ? <br /> : null}
                         <span className="text-muted">Assigned on</span> <strong>{this.props.assignee >= 0 ? this.props.users[this.props.assignee].name : "None"}</strong><br />
-                        <span className="text-muted">Created</span> <abbr title={this.props.createdAt}>{moment(this.props.createdAt).fromNow()}</abbr> <span className="text-muted">by</span> <strong>{this.props.users[this.props.author].name}</strong>
+                        <span className="text-muted">Created</span> <abbr title={this.props.createdAt}>{moment(this.props.createdAt).fromNow()}</abbr> <span className="text-muted">by</span> <strong>{author.name}</strong>
                     </div>
                     <div className="pull-right">
-                    <strong><abbr title={sourceProject.namespace.name + " / " + sourceProject.name}>{sourceProject.name}</abbr> [{this.props.sourceBranch}]</strong> <i className="fa fa-arrow-right text-muted"></i> <strong><abbr title={targetProject.namespace.name + " / " + targetProject.name}>{targetProject.name}</abbr> [{this.props.targetBranch}]</strong></div>
+                    <strong><abbr title={sourceProject ? (sourceProject.namespace.name + " / " + sourceProject.name) : author.name}>{sourceProject ?  sourceProject.name : author.name}</abbr> [{this.props.sourceBranch}]</strong> <i className="fa fa-arrow-right text-muted"></i> <strong><abbr title={targetProject.namespace.name + " / " + targetProject.name}>{targetProject.name}</abbr> [{this.props.targetBranch}]</strong></div>
                 </div>
             </div>
         );

@@ -66,7 +66,8 @@ app.on('ready', function() {
     mainWindow.loadURL('file://' + __dirname + '/public/index.html');
 
     // Open the DevTools.
-    mainWindow.webContents.openDevTools();
+    if(typeof process !== 'undefined' && process.env.NODE_ENV === 'development')
+        mainWindow.webContents.openDevTools();
     
     mainWindow.on('close', function(event) {
         mainWindow.hide();

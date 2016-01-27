@@ -48,10 +48,10 @@ class GitLabWrapper {
     }
     
     onUpdateProjects(callback) {
-        var watchProjects = this.config.getWatchProjects().filter(pid => !!this.projects[pid]);
+        var watchProjects = this.config.getWatchProjects();
         for(let projectId in this.projects) {
             let project = this.projects[projectId];
-            project.isWatching = watchProjects.indexOf(projectId) >= 0;
+            project.isWatching = watchProjects.indexOf(parseInt(projectId)) >= 0;
         }
         this.sync(callback);
     }

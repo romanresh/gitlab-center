@@ -11,7 +11,10 @@ class AppConfig {
         catch(exc) {
             
         }
-        this.nconf.defaults({"updateTimeout": 30});
+        this.nconf.defaults({
+            "updateTimeout": 30, 
+            "projects": []
+        });
     }
     
     getServerInfo() {
@@ -26,11 +29,11 @@ class AppConfig {
     }
     
     getWatchProjects() {
-        return this.nconf.get("projects") || [];
+        return this.nconf.get("projects");
     }
     
     getUpdateTimeout() {
-        return this.nconf.get("updateTimeout") || 30;
+        return this.nconf.get("updateTimeout");
     }
     onUpdateSettings(info) {
         this.nconf.set("server:url", info.gitlabUrl);

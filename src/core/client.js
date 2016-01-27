@@ -88,19 +88,21 @@ class GitLabWrapper {
         let _this = this;
         async.map(watchProjects, (projectId, cb) => {
             var project = this.projects[projectId];
-            if(reloadAll)
-                project.mergeRequests = [];
-            var lastMergeRequest = project.mergeRequests[0];
-            let newMergeRequests = [];
+            var knownMergeRequests = {};
+            if(!reloadAll) {
+                project.mergeRequests.forEach(mr => {
+                    knownMergeRequests[mr.guid] = true;
+                });
+            }
+            project.mergeRequests = [];
             _this.client.projects.merge_requests.list(projectId, function(mergeRequests) {
                 for(let i = 0, mergeRequest; mergeRequest = mergeRequests[i]; i++) {
                     let author = mergeRequest["author"];
                     let assignee = mergeRequest["assignee"];
-                    if(!reloadAll && lastMergeRequest && (new Date(mergeRequest["created_at"]) < new Date(lastMergeRequest.createdAt) || lastMergeRequest.id == mergeRequest["id"]))
-                        break;
-                    newMergeRequests.push({
+                    let guid = project.id + "_" + mergeRequest["id"];
+                    project.mergeRequests.push({
                         id: mergeRequest["id"],
-                        guid: project.id + "_" + mergeRequest["id"],
+                        guid: guid,
                         createdAt: mergeRequest["created_at"],
                         updatedAt: mergeRequest["updated_at"],
                         description: mergeRequest["description"],
@@ -112,13 +114,9 @@ class GitLabWrapper {
                         state: mergeRequest["state"],
                         author: _this.getUserId(author["id"], author),
                         assignee: assignee ? _this.getUserId(assignee["id"], assignee) : -1,
-                        isNew: !reloadAll
+                        isNew: !reloadAll && !knownMergeRequests[guid]
                     });
                 }
-                if(!reloadAll)
-                    project.mergeRequests = newMergeRequests.concat(project.mergeRequests);
-                else
-                    project.mergeRequests = newMergeRequests;
                 cb();
             });
         }, (err, results) => {

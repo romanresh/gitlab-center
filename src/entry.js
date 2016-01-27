@@ -3,6 +3,7 @@ require('../node_modules/bootstrap/dist/css/bootstrap.min.css');
 require('../node_modules/font-awesome/css/font-awesome.min.css');
 require('../node_modules/font-awesome/css/font-awesome.min.css');
 require('../node_modules/react-select/dist/react-select.min.css');
+require('bootstrap');
 
 'use strict';
 

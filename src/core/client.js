@@ -153,7 +153,7 @@ class GitLabWrapper {
                         id: projectId,
                         description: project["description"],
                         public: project["public"],
-                        web_url: project["web_url"],
+                        webUrl: project["web_url"],
                         name: project["name"],
                         namespace: {
                             id: project["namespace"]["id"],

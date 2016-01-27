@@ -1,6 +1,7 @@
 'use strict';
 import React from "react";
 const moment = electronRequire('moment');
+const shell = electronRequire('electron').shell;
 import Select from 'react-select';
 
 var MergeRequestsPage = React.createClass({
@@ -207,9 +208,33 @@ var MergeRequestsPageTitle = React.createClass({
        if(openedByMe > 0)
             openedByMeBadge = <span className="badge merge-request-badge-opened" title="Opened By Me" onClick={this.onOpenedBadgeClick}>{openedByMe}</span>;
        return (
-           <span>{MergeRequestsPage.menuItem.text} {assignedToMeBadge} {openedByMeBadge}</span>
+           <span>{MergeRequestsPage.menuItem.text} {assignedToMeBadge} {openedByMeBadge} <CreateMergeRequestButton projects={this.props.projects} onClick={this.onCreateMergeRequestButtonClick} /></span>
        );
    } 
+});
+
+var CreateMergeRequestButton = React.createClass({
+    onNewMergeRequestClick: function(proj, evt) {
+        let url = proj.webUrl + "/merge_requests/new";
+        shell.openExternal(url);
+    },
+    render: function() {
+        var projects = this.props.projects.filter(proj => proj.isWatching).map((proj) => {
+            return (
+                <li key={proj.id}><a href="#" onClick={this.onNewMergeRequestClick.bind(this, proj)}>{proj.namespace.name + " / " + proj.name}</a></li>
+            );
+        });
+        return (
+            <span>
+            <a data-toggle="dropdown" data-target="#" role="button" aria-haspopup="true" aria-expanded="false" id="dNewMergeRequest">
+                <i className="fa fa-plus-circle"></i>
+            </a>
+                <ul className="dropdown-menu" aria-labelledby="dNewMergeRequest">
+                    {projects}
+                </ul>
+            </span>
+        );
+    }
 });
 
 export { MergeRequestsPage, MergeRequestsPageTitle };

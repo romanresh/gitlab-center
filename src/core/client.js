@@ -102,6 +102,7 @@ class GitLabWrapper {
                     let guid = project.id + "_" + mergeRequest["id"];
                     project.mergeRequests.push({
                         id: mergeRequest["id"],
+                        iid: mergeRequest["iid"],
                         guid: guid,
                         createdAt: mergeRequest["created_at"],
                         updatedAt: mergeRequest["updated_at"],

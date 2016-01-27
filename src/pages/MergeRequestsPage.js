@@ -88,6 +88,11 @@ var MergeRequestsPage = React.createClass({
 });
 
 var MergeRequestItem = React.createClass({
+    onExternalLinkClick: function() {
+        var project = this.props.projects.find(p => p.id == this.props.targetProjectId);
+        let url = project.webUrl + "/merge_requests/" + this.props.iid;
+        shell.openExternal(url);
+    },
     render: function() {
         let targetProject = this.props.projects.find(p => p.id == this.props.targetProjectId);
         let sourceProject = this.props.projects.find(p => p.id == this.props.sourceProjectId);
@@ -95,8 +100,8 @@ var MergeRequestItem = React.createClass({
         
         return (
             <div className="panel panel-default">
-                <div className="panel-heading">{this.props.title}
-                    <span className="label label-primary pull-right">{this.props.state}</span>
+                <div className="panel-heading">{this.props.title} <a href="#" onClick={this.onExternalLinkClick}><i className="fa fa-external-link"></i></a>
+                    <MergeRequestItemLabel state={this.props.state} />
                 </div>
                 <div className="panel-body">
                     <div className="pull-left">
@@ -109,6 +114,20 @@ var MergeRequestItem = React.createClass({
                     <strong><abbr title={sourceProject ? (sourceProject.namespace.name + " / " + sourceProject.name) : author.name}>{sourceProject ?  sourceProject.name : author.name}</abbr> [{this.props.sourceBranch}]</strong> <i className="fa fa-arrow-right text-muted"></i> <strong><abbr title={targetProject.namespace.name + " / " + targetProject.name}>{targetProject.name}</abbr> [{this.props.targetBranch}]</strong></div>
                 </div>
             </div>
+        );
+    }
+});
+var MergeRequestItemLabel = React.createClass({
+    render: function() {
+        let classPostfix = "warning";
+        if(isOpened(this.props.state))
+            classPostfix = "primary";
+        else if(this.props.state == "merged")
+            classPostfix = "success";
+        else if(this.props.state == "closed")
+            classPostfix = "default";
+        return (
+            <span className={"label label-" + classPostfix + " pull-right"}>{this.props.state}</span>
         );
     }
 });
@@ -193,9 +212,9 @@ var MergeRequestsPageTitle = React.createClass({
        var openedByMe = 0;
        for(let i = 0, project; project = this.props.projects[i]; i++) {
         for(let j = 0, mergeRequest; mergeRequest = project.mergeRequests[j]; j++) {
-            if(mergeRequest.assignee == this.props.userId && isOpened(mergeRequest))
+            if(mergeRequest.assignee == this.props.userId && isOpened(mergeRequest.state))
                 assignedToMe++;
-            if(mergeRequest.author == this.props.userId && isOpened(mergeRequest))
+            if(mergeRequest.author == this.props.userId && isOpened(mergeRequest.state))
                 openedByMe++;
         }
        }
@@ -244,7 +263,7 @@ function getMergeRequests(projects, status, assignee, author, targetProject, sea
     for(let i = 0, project; project = projects[i]; i++) {
         for(let j = 0, mergeRequest; mergeRequest = project.mergeRequests[j]; j++) {
             if(status != "all") {
-                if(status == "opened" && !isOpened(mergeRequest))
+                if(status == "opened" && !isOpened(mergeRequest.state))
                     continue;
                 else if(status != "opened" && mergeRequest.state != status)
                     continue;
@@ -266,6 +285,6 @@ function getMergeRequests(projects, status, assignee, author, targetProject, sea
     return results;
 }
 
-function isOpened(mergeRequest) {
-    return ["opened", "reopened"].indexOf(mergeRequest.state) > -1;
+function isOpened(state) {
+    return ["opened", "reopened"].indexOf(state) > -1;
 }

@@ -249,6 +249,7 @@ var CreateMergeRequestButton = React.createClass({
                 <i className="fa fa-plus-circle"></i>
             </a>
                 <ul className="dropdown-menu" aria-labelledby="dNewMergeRequest">
+                    <li className="dropdown-header">Choose Source Project:</li>
                     {projects}
                 </ul>
             </span>

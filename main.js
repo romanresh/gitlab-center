@@ -12,6 +12,7 @@ const CombinedStream = require('combined-stream');
 const AppConfig = require('./src/core/config');
 const GitLabWrapper = require('./src/core/client');
 const Synchronizer = require('./src/core/synchronizer');
+const pjson = require('./package.json');
 
 var shouldQuit = app.makeSingleInstance(function() {
     if(mainWindow) {
@@ -54,11 +55,13 @@ app.on('before-quit', () => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 app.on('ready', function() {
+    
     // Create the browser window.
     mainWindow = new BrowserWindow({
         width: 1024, 
         height: 600, 
         icon: __dirname + '/public/logo-square.png',
+        title: `GitLab Center v${pjson.version}`,
         'min-width': 1024,
         'min-height': 600
     });
@@ -90,7 +93,8 @@ app.on('ready', function() {
         mainWindow.focus();
     });
     var contextMenu = new Menu();
-    contextMenu.append(new MenuItem({ label: 'Close GitLab Center', click: function() { app.quit(); } }));
+    contextMenu.append(new MenuItem({ label: 'Show window', click: function() { mainWindow.focus(); } }));
+    contextMenu.append(new MenuItem({ label: 'Exit', click: function() { app.quit(); } }));
     appIcon.setContextMenu(contextMenu);
 });
 // 

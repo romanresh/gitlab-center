@@ -97,6 +97,40 @@ var MergeRequestItem = React.createClass({
         let targetProject = this.props.projects.find(p => p.id == this.props.targetProjectId);
         let sourceProject = this.props.projects.find(p => p.id == this.props.sourceProjectId);
         let author = this.props.users[this.props.author];
+        let mergeDirection = null;
+        if(this.props.targetProjectId == this.props.sourceProjectId) {
+            mergeDirection = (
+                <span>
+                    <strong>
+                        {targetProject.namespace.name} / {targetProject.name} [{this.props.sourceBranch}] 
+                    </strong> <i className="fa fa-arrow-right text-muted"></i> <strong>
+                        [{this.props.targetBranch}] 
+                    </strong>
+                </span>
+            );
+        }
+        else if(!sourceProject) {
+            mergeDirection = (
+                <span>
+                    <strong>
+                        <abbr title="Unknown project">{author.name}</abbr> [{this.props.sourceBranch}]
+                    </strong> <i className="fa fa-arrow-right text-muted"></i> <strong>
+                        <abbr title={targetProject.namespace.name + " / " + targetProject.name}>{targetProject.name}</abbr> [{this.props.targetBranch}]
+                    </strong>
+                </span>
+            );
+        }
+        else if(sourceProject) {
+            mergeDirection = (
+                <span>
+                    <strong>
+                        <abbr title={sourceProject.namespace.name + " / " + sourceProject.name}>{sourceProject.namespace.name + " / " + sourceProject.name}</abbr> [{this.props.sourceBranch}]
+                    </strong> <i className="fa fa-arrow-right text-muted"></i> <strong>
+                        <abbr title={targetProject.namespace.name + " / " + targetProject.name}>{targetProject.name}</abbr> [{this.props.targetBranch}]
+                    </strong>
+                </span>
+            );
+        }
         
         return (
             <div className="panel panel-default">
@@ -104,14 +138,17 @@ var MergeRequestItem = React.createClass({
                     <MergeRequestItemLabel state={this.props.state} />
                 </div>
                 <div className="panel-body">
-                    <div className="pull-left">
-                        {this.props.description}
-                        {this.props.description ? <br /> : null}
-                        <span className="text-muted">Assigned on</span> <strong>{this.props.assignee >= 0 ? this.props.users[this.props.assignee].name : "None"}</strong><br />
-                        <span className="text-muted">Created</span> <abbr title={this.props.createdAt}>{moment(this.props.createdAt).fromNow()}</abbr> <span className="text-muted">by</span> <strong>{author.name}</strong>
+                    {this.props.description}
+                    <div>
+                        <span className="text-muted">Assigned on</span> <strong>{this.props.assignee >= 0 ? this.props.users[this.props.assignee].name : "None"}</strong>
+                        <div className="pull-right text-right">
+                            <span className="text-muted">updated <abbr title={moment(this.props.updatedAt).format('lll')}>{moment(this.props.updatedAt).fromNow()}</abbr></span>
+                        </div>
                     </div>
-                    <div className="pull-right">
-                    <strong><abbr title={sourceProject ? (sourceProject.namespace.name + " / " + sourceProject.name) : author.name}>{sourceProject ?  sourceProject.name : author.name}</abbr> [{this.props.sourceBranch}]</strong> <i className="fa fa-arrow-right text-muted"></i> <strong><abbr title={targetProject.namespace.name + " / " + targetProject.name}>{targetProject.name}</abbr> [{this.props.targetBranch}]</strong></div>
+                    <div>
+                        <span className="text-muted">Created</span> <abbr title={moment(this.props.createdAt).format('lll')}>{moment(this.props.createdAt).fromNow()}</abbr> <span className="text-muted">by</span> <strong>{author.name}</strong>
+                        <div className="pull-right text-right">{mergeDirection}</div>
+                    </div>
                 </div>
             </div>
         );
@@ -261,6 +298,7 @@ export { MergeRequestsPage, MergeRequestsPageTitle };
 
 function getMergeRequests(projects, status, assignee, author, targetProject, searchString) {
     let results = [];
+    searchString = searchString.toLowerCase();
     for(let i = 0, project; project = projects[i]; i++) {
         for(let j = 0, mergeRequest; mergeRequest = project.mergeRequests[j]; j++) {
             if(status != "all") {
@@ -276,8 +314,8 @@ function getMergeRequests(projects, status, assignee, author, targetProject, sea
             if(targetProject >= 0 && mergeRequest.targetProjectId != targetProject)
                 continue;
             if(searchString) {
-                if(mergeRequest.title.indexOf(searchString) < 0 &&
-                    mergeRequest.description.indexOf(searchString) < 0)
+                if(mergeRequest.title.toLowerCase().indexOf(searchString) < 0 &&
+                    mergeRequest.description.toLowerCase().indexOf(searchString) < 0)
                 continue;
             }
             results.push(mergeRequest);

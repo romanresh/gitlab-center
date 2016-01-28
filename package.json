@@ -1,12 +1,13 @@
 {
   "name": "gitlab-center",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "GitLab server notifier",
   "main": "main.js",
   "scripts": {
     "start": "node_modules/electron-prebuilt/dist/Electron main.js",
     "watch": "node_modules/.bin/webpack-dev-server --hot --inline",
-    "win32-package": "./node_modules/.bin/webpack -p && electron-packager . GitLabCenter --out ./bin --platform=win32 --arch=x64 --overwrite --prune --asar=true"
+    "win32-package": "./node_modules/.bin/webpack -p --config webpack.production.config.js && electron-packager . GitLabCenter --out ./bin --platform=win32 --arch=x64 --overwrite --prune --asar=true",
+    "win32-package-noasar": "./node_modules/.bin/webpack -p --config webpack.production.config.js && electron-packager . GitLabCenter --out ./bin --platform=win32 --arch=x64 --overwrite --prune"
   },
   "repository": {
     "type": "git",

@@ -1,6 +1,6 @@
 {
   "name": "gitlab-center",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "GitLab server notifier",
   "main": "main.js",
   "scripts": {

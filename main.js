@@ -142,11 +142,10 @@ function isOpened(mergeRequest) {
     return ["opened", "reopened"].indexOf(mergeRequest.state) > -1;
 }
 function updateTray(state) {
-    return;
     var isActive = false;
     if(state.userId && state.projects.length) {
         for(let i = 0, project; project = state.projects[i]; i++) {
-            if(project.mergeRequests.find(mr => isOpened(mr) && (mr.assignee == state.userId || ms.author == state.userId))) {
+            if(project.mergeRequests.find(mr => isOpened(mr) && (mr.assignee == state.userId || mr.author == state.userId))) {
                 isActive = true;
                 break;
             }

@@ -52,6 +52,7 @@ class GitLabWrapper {
         for(let projectId in this.projects) {
             let project = this.projects[projectId];
             project.isWatching = watchProjects.indexOf(parseInt(projectId)) >= 0;
+            project.mergeRequests = [];
         }
         this.sync(callback);
     }

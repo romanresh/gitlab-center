@@ -61,10 +61,10 @@ app.on('ready', function() {
         width: 1024, 
         height: 600, 
         icon: __dirname + '/public/logo-square.png',
-        title: `GitLab Center v${pjson.version}`,
         'min-width': 1024,
         'min-height': 600
     });
+    mainWindow.ver = pjson.version;
     mainWindow.setMenu(null);
 
     // and load the index.html of the app.
@@ -90,10 +90,10 @@ app.on('ready', function() {
     appIcon = new Tray(__dirname + '/public/logo-square.png');
     appIcon.setToolTip('GitLab Center');
     appIcon.on('click', () => {
-        mainWindow.focus();
+        mainWindow.show();
     });
     var contextMenu = new Menu();
-    contextMenu.append(new MenuItem({ label: 'Show window', click: function() { mainWindow.focus(); } }));
+    contextMenu.append(new MenuItem({ label: 'Show window', click: function() { mainWindow.show(); } }));
     contextMenu.append(new MenuItem({ label: 'Exit', click: function() { app.quit(); } }));
     appIcon.setContextMenu(contextMenu);
 });

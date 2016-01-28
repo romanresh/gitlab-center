@@ -2,6 +2,7 @@
 <html>
 
 <head>
+    <title>GitLab Center</title>
     <script>
     $ = jQuery = require('../node_modules/jquery/dist/jquery.js');
     $(document).ready(function(){
@@ -20,6 +21,7 @@
         else
             scr.src = './built/bundle.js';
         document.body.appendChild(scr);
+        document.title = "GitLab Center v" + require('electron').remote.getCurrentWindow().ver;
     </script>
     
 </body>

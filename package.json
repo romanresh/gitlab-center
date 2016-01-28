@@ -6,8 +6,8 @@
   "scripts": {
     "start": "node_modules/electron-prebuilt/dist/Electron main.js",
     "watch": "node_modules/.bin/webpack-dev-server --hot --inline",
-    "win32-package": "./node_modules/.bin/webpack -p --config webpack.production.config.js && electron-packager . GitLabCenter --out ./bin --platform=win32 --arch=x64 --overwrite --prune --asar=true",
-    "win32-package-noasar": "./node_modules/.bin/webpack -p --config webpack.production.config.js && electron-packager . GitLabCenter --out ./bin --platform=win32 --arch=x64 --overwrite --prune"
+    "win32-package": "./node_modules/.bin/webpack -p --config webpack.production.config.js && electron-packager . GitLabCenter --out ./bin --platform=win32 --arch=x64 --overwrite --prune --asar=true --icon=logo-square.ico",
+    "win32-package-noasar": "./node_modules/.bin/webpack -p --config webpack.production.config.js && electron-packager . GitLabCenter --out ./bin --platform=win32 --arch=x64 --overwrite --prune--icon=logo-square.ico"
   },
   "repository": {
     "type": "git",

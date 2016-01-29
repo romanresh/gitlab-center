@@ -79,6 +79,10 @@ app.on('ready', function() {
         event.preventDefault();
     });
     
+    mainWindow.webContents.on('new-window', function(event) {
+        event.preventDefault();
+    });
+    
     // Emitted when the window is closed.
     mainWindow.on('closed', function() {
         // Dereference the window object, usually you would store windows

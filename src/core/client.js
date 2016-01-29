@@ -41,7 +41,9 @@ class GitLabWrapper {
         state = state || createState(this.config);
         async.parallel([
             this.loadMergeRequests.bind(this, true)
-        ], () => {
+        ], (error, results) => {
+            if(error)
+                state.error = error;
             updateState(state, this.projects, this.users, this.currentUserId);
             callback(state);
         });
@@ -97,6 +99,10 @@ class GitLabWrapper {
             }
             project.mergeRequests = [];
             _this.client.projects.merge_requests.list(projectId, function(mergeRequests) {
+                if(!mergeRequests) {
+                    cb(`Cannot load merge requests for '${project.namespace + " / " + project.name}'`);
+                    return;
+                }
                 for(let i = 0, mergeRequest; mergeRequest = mergeRequests[i]; i++) {
                     let author = mergeRequest["author"];
                     let assignee = mergeRequest["assignee"];
@@ -122,7 +128,7 @@ class GitLabWrapper {
                 cb();
             });
         }, (err, results) => {
-            callback();
+            callback(err);
         });
     }
     

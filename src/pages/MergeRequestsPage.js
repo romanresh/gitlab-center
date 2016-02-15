@@ -2,12 +2,13 @@
 import React from "react";
 const moment = electronRequire('moment');
 const shell = electronRequire('electron').shell;
+import * as utils from '../core/utils'; 
 import Select from 'react-select';
 
 var MergeRequestsPage = React.createClass({
     getInitialState: function() {
         return {
-            status: "all", // opened, merged, closed, all
+            status: "opened", // opened, merged, closed, all
             assignee: -1, // userId,
             author: -1, // userId,
             targetProject: -1 // userId 
@@ -55,9 +56,17 @@ var MergeRequestsPage = React.createClass({
     render: function() {
        let mergeRequests = getMergeRequests(this.props.projects, this.state.status,
            this.state.assignee, this.state.author, this.state.targetProject, this.props.searchString);
-       let mergeRequestList = mergeRequests.map((mr) => {
-           return <MergeRequestItem {...mr} projects={this.props.projects} users={this.props.users} key={mr.guid} />
-       });
+       let mergeRequestList;
+       if(mergeRequests.length) {
+            mergeRequestList = mergeRequests.map((mr) => {
+                return <MergeRequestItem {...mr} projects={this.props.projects} users={this.props.users} key={mr.guid} userId={this.props.userId} />
+            });
+       }
+       else {
+           mergeRequestList = (<div className="text-center text-muted panel panel-default">
+            <div className="panel-body">There are no merge requests. Check applied filters or setup Watching Projects on the Settings page</div>
+           </div>);
+       }
        
        return (
            <div className="merge-requests">
@@ -81,7 +90,7 @@ var MergeRequestsPage = React.createClass({
                         onAssigneeChanged={this.onFilterAssigneeChanged} 
                         onAuthorChanged={this.onFilterAuthorChanged} />
                 </div>
-            </div> 
+            </div>
            </div>
        );
     } 
@@ -92,6 +101,10 @@ var MergeRequestItem = React.createClass({
         var project = this.props.projects.find(p => p.id == this.props.targetProjectId);
         let url = project.webUrl + "/merge_requests/" + this.props.iid;
         shell.openExternal(url);
+    },
+    onExternalLinkRightClick: function(e) {
+        e.preventDefault();
+        alert("sdfsdf");
     },
     render: function() {
         let targetProject = this.props.projects.find(p => p.id == this.props.targetProjectId);
@@ -134,19 +147,23 @@ var MergeRequestItem = React.createClass({
         
         return (
             <div className="panel panel-default">
-                <div className="panel-heading">{this.props.title} <a href="#" onClick={this.onExternalLinkClick}><i className="fa fa-external-link"></i></a>
+                <div className="panel-heading">{this.props.title} <a href="#" onClick={this.onExternalLinkClick} onContextMenu={this.onExternalLinkRightClick}><i className="fa fa-external-link"></i></a>
                     <MergeRequestItemLabel state={this.props.state} />
+                    <ul ref="link-contextmenu" className="dropdown-menu" role="menu" style={{display: "none"}} >
+                        <li><a tabIndex="-1" href="#">Open link in browser</a></li>
+                        <li><a tabIndex="-1" href="#">Copy link to clipboard</a></li>
+                    </ul>
                 </div>
                 <div className="panel-body">
                     {this.props.description}
                     <div>
-                        <span className="text-muted">Assigned on</span> <strong>{this.props.assignee >= 0 ? this.props.users[this.props.assignee].name : "None"}</strong>
+                        <span className="text-muted">Assigned on</span> <strong className={this.props.assignee >= 0 && this.props.assignee != this.props.userId ? null : "text-danger"}>{this.props.assignee >= 0 ? this.props.users[this.props.assignee].name : "None"}</strong>
                         <div className="pull-right text-right">
                             <span className="text-muted">updated <abbr title={moment(this.props.updatedAt).format('lll')}>{moment(this.props.updatedAt).fromNow()}</abbr></span>
                         </div>
                     </div>
                     <div>
-                        <span className="text-muted">Created</span> <abbr title={moment(this.props.createdAt).format('lll')}>{moment(this.props.createdAt).fromNow()}</abbr> <span className="text-muted">by</span> <strong>{author.name}</strong>
+                        <span className="text-muted">Created</span> <abbr title={moment(this.props.createdAt).format('lll')}>{moment(this.props.createdAt).fromNow()}</abbr> <span className="text-muted">by</span> <strong className={this.props.author == this.props.userId ? "text-primary" : null}>{author.name}</strong>
                         <div className="pull-right text-right">{mergeDirection}</div>
                     </div>
                 </div>
@@ -157,7 +174,7 @@ var MergeRequestItem = React.createClass({
 var MergeRequestItemLabel = React.createClass({
     render: function() {
         let classPostfix = "warning";
-        if(isOpened(this.props.state))
+        if(utils.isOpenedMergeRequest(this.props.state))
             classPostfix = "primary";
         else if(this.props.state == "merged")
             classPostfix = "success";
@@ -245,24 +262,14 @@ var MergeRequestsPageTitle = React.createClass({
         this.props.onBadgeClick("merge-request-opened");
     },
    render: function() {
-       var assignedToMe = 0;
-       var openedByMe = 0;
-       for(let i = 0, project; project = this.props.projects[i]; i++) {
-        for(let j = 0, mergeRequest; mergeRequest = project.mergeRequests[j]; j++) {
-            if(mergeRequest.assignee == this.props.userId && isOpened(mergeRequest.state))
-                assignedToMe++;
-            if(mergeRequest.author == this.props.userId && isOpened(mergeRequest.state))
-                openedByMe++;
-        }
-       }
-       
+       let info = utils.getImportantMergeRequestsInfo(this.props.projects, this.props.userId);
        var assignedToMeBadge = null;
        var openedByMeBadge = null;
        
-       if(assignedToMe > 0)
-            assignedToMeBadge = <span className="badge merge-request-badge-assigned" title="Assigned To Me" onClick={this.onAssignedBadgeClick}>{assignedToMe}</span>;
-       if(openedByMe > 0)
-            openedByMeBadge = <span className="badge merge-request-badge-opened" title="Opened By Me" onClick={this.onOpenedBadgeClick}>{openedByMe}</span>;
+       if(info.assignedToMe)
+            assignedToMeBadge = <span className="badge merge-request-badge-assigned" title="Assigned To Me" onClick={this.onAssignedBadgeClick}>{info.assignedToMe}</span>;
+       if(info.mine)
+            openedByMeBadge = <span className="badge merge-request-badge-opened" title="Opened By Me" onClick={this.onOpenedBadgeClick}>{info.mine}</span>;
        return (
            <span>{MergeRequestsPage.menuItem.text} {assignedToMeBadge} {openedByMeBadge} <CreateMergeRequestButton projects={this.props.projects} onClick={this.onCreateMergeRequestButtonClick} /></span>
        );
@@ -302,7 +309,7 @@ function getMergeRequests(projects, status, assignee, author, targetProject, sea
     for(let i = 0, project; project = projects[i]; i++) {
         for(let j = 0, mergeRequest; mergeRequest = project.mergeRequests[j]; j++) {
             if(status != "all") {
-                if(status == "opened" && !isOpened(mergeRequest.state))
+                if(status == "opened" && !utils.isOpenedMergeRequest(mergeRequest.state))
                     continue;
                 else if(status != "opened" && mergeRequest.state != status)
                     continue;
@@ -322,8 +329,4 @@ function getMergeRequests(projects, status, assignee, author, targetProject, sea
         }
     }
     return results;
-}
-
-function isOpened(state) {
-    return ["opened", "reopened"].indexOf(state) > -1;
 }

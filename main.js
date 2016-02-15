@@ -8,6 +8,7 @@ const Tray = electron.Tray;
 const Menu = electron.Menu;
 const MenuItem = electron.MenuItem;
 const CombinedStream = require('combined-stream');
+const utils = require('./src/core/utils');
 
 const AppConfig = require('./src/core/config');
 const GitLabWrapper = require('./src/core/client');
@@ -52,11 +53,8 @@ app.on('before-quit', () => {
     }
 });
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
+
 app.on('ready', function() {
-    
-    // Create the browser window.
     mainWindow = new BrowserWindow({
         width: 1024, 
         height: 600, 
@@ -142,21 +140,27 @@ function runSynchronizer() {
             updateTray(state);
         });
 }
-function isOpened(mergeRequest) {
-    return ["opened", "reopened"].indexOf(mergeRequest.state) > -1;
-}
+
+let isTrayActive = false;
 function updateTray(state) {
     var isActive = false;
     if(state.userId && state.projects.length) {
-        for(let i = 0, project; project = state.projects[i]; i++) {
-            if(project.mergeRequests.find(mr => isOpened(mr) && (mr.assignee == state.userId || mr.author == state.userId))) {
-                isActive = true;
-                break;
-            }
+        let importantMergeRequestsInfo = utils.getImportantMergeRequestsInfo(state.projects, state.userId); 
+        isActive = importantMergeRequestsInfo.mine > 0 || importantMergeRequestsInfo.assignedToMe > 0;
+        let tooltip = "GitLab Center";
+        if(isActive) {
+            tooltip = "Merge requests: "
+            if(importantMergeRequestsInfo.mine > 0)
+                tooltip += `Opened by Me: ${importantMergeRequestsInfo.mine}. `;
+            if(importantMergeRequestsInfo.assignedToMe > 0)
+                tooltip += `Assigned to Me: ${importantMergeRequestsInfo.assignedToMe}. `;
         }
+        appIcon.setToolTip(tooltip);
     }
-    if(isActive)
+    if(!isTrayActive && isActive) {
         appIcon.setImage(__dirname + '/public/logo-square-active.png');
-    else
+    }
+    if(isTrayActive && !isActive)
         appIcon.setImage(__dirname + '/public/logo-square.png');
+    isTrayActive = isActive;
 }

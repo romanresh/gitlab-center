@@ -2,6 +2,7 @@
 
 const Gitlab = require('gitlab');
 const async = require('async');
+const utils = require('./utils');
 
 class GitLabWrapper {
     constructor(config) {
@@ -100,7 +101,7 @@ class GitLabWrapper {
             project.mergeRequests = [];
             _this.client.projects.merge_requests.list(projectId, function(mergeRequests) {
                 if(!mergeRequests) {
-                    cb(`Cannot load merge requests for '${project.namespace + " / " + project.name}'`);
+                    cb(`Cannot load merge requests for '${utils.getProjectFullName(project)}'`);
                     return;
                 }
                 for(let i = 0, mergeRequest; mergeRequest = mergeRequests[i]; i++) {

@@ -152,6 +152,7 @@ var MergeRequestItem = React.createClass({
                   <a href="javascript:void(0)" onClick={this.onExternalLinkClick} title="Open in browser"><i className="fa fa-external-link" style={{margin: "0 5px"}}></i></a>
                   <a href="javascript:void(0)" onClick={this.onClipboardLinkClick} title="Copy link to clipboard"><i className="fa fa-clipboard"></i></a>
                     <MergeRequestItemLabel state={this.props.state} />
+                    <small className="text-muted pull-right" style={{marginRight: "5px"}}>{"#" + this.props.iid}</small>
                 </div>
                 <div className="panel-body">
                     {this.props.description}

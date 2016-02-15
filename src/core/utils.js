@@ -26,6 +26,11 @@ function getProjectFullName(project) {
     return `${project.namespace.name} \ ${project.name}`;
 }
 
+function getMergeRequestUrl(project, iid) {
+    return project.webUrl + "/merge_requests/" + iid;
+}
+
 module.exports.getImportantMergeRequestsInfo = getImportantMergeRequestsInfo;
 module.exports.isOpenedMergeRequest = isOpenedMergeRequest;
 module.exports.getProjectFullName = getProjectFullName;
+module.exports.getMergeRequestUrl = getMergeRequestUrl;

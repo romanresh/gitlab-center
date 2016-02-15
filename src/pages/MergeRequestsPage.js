@@ -2,6 +2,8 @@
 import React from "react";
 const moment = electronRequire('moment');
 const shell = electronRequire('electron').shell;
+const clipboard = electronRequire('electron').clipboard;
+
 import * as utils from '../core/utils'; 
 import Select from 'react-select';
 
@@ -98,13 +100,12 @@ var MergeRequestsPage = React.createClass({
 
 var MergeRequestItem = React.createClass({
     onExternalLinkClick: function() {
-        var project = this.props.projects.find(p => p.id == this.props.targetProjectId);
-        let url = project.webUrl + "/merge_requests/" + this.props.iid;
+        let url = utils.getMergeRequestUrl(this.props.projects.find(p => p.id == this.props.targetProjectId), this.props.iid);
         shell.openExternal(url);
     },
-    onExternalLinkRightClick: function(e) {
-        e.preventDefault();
-        alert("sdfsdf");
+    onClipboardLinkClick: function() {
+        let url = utils.getMergeRequestUrl(this.props.projects.find(p => p.id == this.props.targetProjectId), this.props.iid);
+        clipboard.writeText(url);
     },
     render: function() {
         let targetProject = this.props.projects.find(p => p.id == this.props.targetProjectId);
@@ -147,12 +148,10 @@ var MergeRequestItem = React.createClass({
         
         return (
             <div className="panel panel-default">
-                <div className="panel-heading">{this.props.title} <a href="#" onClick={this.onExternalLinkClick} onContextMenu={this.onExternalLinkRightClick}><i className="fa fa-external-link"></i></a>
+                <div className="panel-heading">{this.props.title} 
+                  <a href="javascript:void(0)" onClick={this.onExternalLinkClick} title="Open in browser"><i className="fa fa-external-link" style={{margin: "0 5px"}}></i></a>
+                  <a href="javascript:void(0)" onClick={this.onClipboardLinkClick} title="Copy link to clipboard"><i className="fa fa-clipboard"></i></a>
                     <MergeRequestItemLabel state={this.props.state} />
-                    <ul ref="link-contextmenu" className="dropdown-menu" role="menu" style={{display: "none"}} >
-                        <li><a tabIndex="-1" href="#">Open link in browser</a></li>
-                        <li><a tabIndex="-1" href="#">Copy link to clipboard</a></li>
-                    </ul>
                 </div>
                 <div className="panel-body">
                     {this.props.description}
@@ -284,7 +283,7 @@ var CreateMergeRequestButton = React.createClass({
     render: function() {
         var projects = this.props.projects.filter(proj => proj.isWatching).map((proj) => {
             return (
-                <li key={proj.id}><a href="#" onClick={this.onNewMergeRequestClick.bind(this, proj)}>{proj.namespace.name + " / " + proj.name}</a></li>
+                <li key={proj.id}><a href="javascript:void(0)" onClick={this.onNewMergeRequestClick.bind(this, proj)}>{proj.namespace.name + " / " + proj.name}</a></li>
             );
         });
         return (

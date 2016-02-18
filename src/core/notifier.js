@@ -13,13 +13,11 @@ class Notifier {
             let target = change.target;
             if(target["author"] == userId || target["assignee"] == userId || (source && source["assignee"] == userId)) {
                 if(!source)
-                    this.notifyMergeRequest("New merge request", target, users, projects);
+                    this.notifyMergeRequest("Merge request CREATED", target, users, projects);
                 else if(target["state"] != source["state"])
-                    this.notifyMergeRequest(`Merge request ${target["state"]}`, target, users, projects);
+                    this.notifyMergeRequest(`Merge request ${target["state"].toUpperCase()}`, target, users, projects);
                 else if(source["assignee"] != target["assignee"])
-                    this.notifyMergeRequest(`Merge request assigned to ${users[target["assignee"]].name}`, target, users, projects);
-                else if(i == 0 || moment(target["updatedAt"]).diff(moment(source["updatedAt"])) > 0)
-                    this.notifyMergeRequest(`Merge request updated`, target, users, projects);
+                    this.notifyMergeRequest(`Merge request ASSIGNED to ${users[target["assignee"]].name}`, target, users, projects);
             }
         }
     }

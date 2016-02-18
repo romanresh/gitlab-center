@@ -3,14 +3,16 @@
 const Gitlab = require('gitlab');
 const async = require('async');
 const utils = require('./utils');
+const moment = require('moment');
 
 class GitLabWrapper {
-    constructor(config) {
+    constructor(config, notifier) {
         this.config = config;
         this.client = null;
         this.projects = {};
         this.users = {};
         this.currentUserId = -1;
+        this.notifier = notifier;
     } 
     
     init(callback) {
@@ -59,12 +61,10 @@ class GitLabWrapper {
         }
         this.sync(callback);
     }
-    onSync(callback, reloadAll) {
+    onTimeoutSync(callback) {
         let operations = [];
         let state = createState(this.config);
-        if(reloadAll)
-            operations.push(this.loadProjectsList.bind(this));
-        operations.push(this.loadMergeRequests.bind(this, reloadAll));
+        operations.push(this.loadMergeRequests.bind(this, false));
         async.parallel(operations, (err) => {
             if(err)
                 state.error = err;
@@ -87,28 +87,27 @@ class GitLabWrapper {
     
     /* async operations */
     
-    loadMergeRequests(reloadAll, callback) {
+    loadMergeRequests(skipChanges, callback) {
         var watchProjects = this.config.getWatchProjects().filter(pid => !!this.projects[pid]);
         let _this = this;
         async.map(watchProjects, (projectId, cb) => {
-            var project = this.projects[projectId];
-            var knownMergeRequests = {};
-            if(!reloadAll) {
-                project.mergeRequests.forEach(mr => {
-                    knownMergeRequests[mr.guid] = true;
-                });
-            }
-            project.mergeRequests = [];
-            _this.client.projects.merge_requests.list(projectId, function(mergeRequests) {
+            _this.client.projects.merge_requests.list(projectId, (mergeRequests) => {
+                let project = this.projects[projectId];
                 if(!mergeRequests) {
                     cb(`Cannot load merge requests for '${utils.getProjectFullName(project)}'`);
                     return;
                 }
+                let oldMergeRequests = {};
+                let changes = [];
+                for(let i = 0, mr; mr = project.mergeRequests[i]; i++)
+                    oldMergeRequests[mr.id] = mr;
+                project.mergeRequests = [];
+                
                 for(let i = 0, mergeRequest; mergeRequest = mergeRequests[i]; i++) {
                     let author = mergeRequest["author"];
                     let assignee = mergeRequest["assignee"];
                     let guid = project.id + "_" + mergeRequest["id"];
-                    project.mergeRequests.push({
+                    let mr = {
                         id: mergeRequest["id"],
                         iid: mergeRequest["iid"],
                         guid: guid,
@@ -122,13 +121,20 @@ class GitLabWrapper {
                         title: mergeRequest["title"],
                         state: mergeRequest["state"],
                         author: _this.getUserId(author["id"], author),
-                        assignee: assignee ? _this.getUserId(assignee["id"], assignee) : -1,
-                        isNew: !reloadAll && !knownMergeRequests[guid]
-                    });
+                        assignee: assignee ? _this.getUserId(assignee["id"], assignee) : -1
+                    };
+                    project.mergeRequests.push(mr);
+                    if(!skipChanges)
+                        changes.push({source: oldMergeRequests[mr.id], target: mr});
                 }
-                cb();
+                cb(null, changes);
             });
         }, (err, results) => {
+            let changes = [];
+            for(let i = 0, pResults; pResults = results[i]; i++)
+                changes = changes.concat(pResults);
+            if(changes.length)
+                this.notifier.onMergeRequestChanges(changes, this.currentUserId, this.users, this.projects);
             callback(err);
         });
     }

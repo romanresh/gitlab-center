@@ -10,7 +10,7 @@ class Synchronizer {
         this.stop();
         this.intervalId = setInterval(() => {
             callbackBefore();
-            this.wrapper.onSync((state) => callbackAfter(state), false); 
+            this.wrapper.onTimeoutSync((state) => callbackAfter(state), false); 
         }, this.config.getUpdateTimeout() * 1000);
     }
     stop() {

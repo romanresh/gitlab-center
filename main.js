@@ -13,7 +13,9 @@ const utils = require('./src/core/utils');
 const AppConfig = require('./src/core/config');
 const GitLabWrapper = require('./src/core/client');
 const Synchronizer = require('./src/core/synchronizer');
+const Notifier = require('./src/core/notifier');
 const pjson = require('./package.json');
+
 
 var shouldQuit = app.makeSingleInstance(function() {
     if(mainWindow) {
@@ -34,7 +36,8 @@ var mainWindow = null;
 var appIcon = null;
 
 var config = new AppConfig();
-var wrapper = new GitLabWrapper(config);
+var notifier = new Notifier();
+var wrapper = new GitLabWrapper(config, notifier);
 var synchronizer = new Synchronizer(config, wrapper);
 
 // Quit when all windows are closed.

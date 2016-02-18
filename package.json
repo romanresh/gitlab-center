@@ -6,8 +6,9 @@
   "scripts": {
     "start": "node_modules/electron-prebuilt/dist/Electron main.js",
     "watch": "node_modules/.bin/webpack-dev-server --hot --inline",
-    "win32-package": "./node_modules/.bin/webpack -p --config webpack.production.config.js && electron-packager . GitLabCenter --out ./bin --platform=win32 --arch=x64 --overwrite --prune --asar=true --icon=logo-square.ico",
-    "win32-package-noasar": "./node_modules/.bin/webpack -p --config webpack.production.config.js && electron-packager . GitLabCenter --out ./bin --platform=win32 --arch=x64 --overwrite --prune--icon=logo-square.ico"
+    "win32-package": "./node_modules/.bin/webpack -p --config webpack.production.config.js && electron-packager . GitLabCenter --out ./bin --platform=win32 --arch=x64 --overwrite --prune --asar=true --icon=logo-square.ico --asar-unpack=\"*logo-square.png\"",
+    "win32-package-noasar": "./node_modules/.bin/webpack -p --config webpack.production.config.js && electron-packager . GitLabCenter --out ./bin --platform=win32 --arch=x64 --overwrite --prune--icon=logo-square.ico",
+    "win32-package-asar": "./node_modules/.bin/webpack -p --config webpack.production.config.js && electron-packager . GitLabCenter --out ./bin --platform=win32 --arch=x64 --overwrite --prune--icon=logo-square.ico && asar pack ./bin/GitLabCenter-win32-x64/resources/app ./bin/GitLabCenter-win32-x64/resources/app.asar --unpack \"./node_modules/node-notifier/vendor/**\""
   },
   "repository": {
     "type": "git",
@@ -35,6 +36,7 @@
     "moment": "^2.11.1",
     "nconf": "^0.8.2",
     "node-gitlab": "^1.2.1",
+    "node-notifier": "^4.5.0",
     "react": "^0.14.6",
     "react-dom": "^0.14.6",
     "react-select": "^1.0.0-beta8"
